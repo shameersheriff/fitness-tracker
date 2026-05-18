@@ -1,0 +1,11 @@
+{
+  "extends": "@fitness-tracker/ts-config/react.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "noEmit": true
+  },
+  "include": ["src", "vite.config.ts", "vitest.setup.ts"]
+}
