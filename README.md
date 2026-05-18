@@ -11,7 +11,7 @@ cloud sync, recommendations, notifications, and multi-user SaaS features.
 - Backend: Node.js, Express, TypeScript, Prisma, Zod, Swagger/OpenAPI, Jest, Supertest
 - Database: SQLite through Prisma, with a schema designed for future PostgreSQL/MySQL/MSSQL
   migrations
-- Tooling: npm workspaces, ESLint, Prettier, Husky, lint-staged, Docker
+- Tooling: pnpm workspaces, ESLint, Prettier, Husky, lint-staged, Docker
 
 ## Monorepo Layout
 
@@ -29,12 +29,12 @@ docs/             Architecture and API notes
 ## Setup
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env
-npm run db:generate
-npm run db:migrate
-npm run db:seed
-npm run dev
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
+pnpm dev
 ```
 
 Frontend runs on `http://localhost:5173`; backend runs on `http://localhost:4000`.
@@ -42,12 +42,12 @@ Frontend runs on `http://localhost:5173`; backend runs on `http://localhost:4000
 ## Common Commands
 
 ```bash
-npm run build
-npm run lint
-npm run test
-npm run typecheck
-npm run db:migrate
-npm run db:seed
+pnpm build
+pnpm lint
+pnpm test
+pnpm typecheck
+pnpm db:migrate
+pnpm db:seed
 ```
 
 ## API Overview

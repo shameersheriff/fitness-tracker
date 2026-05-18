@@ -15,9 +15,9 @@ validators, DTOs, entities, types, and tests.
 ## Prisma
 
 ```bash
-npm run db:generate
-npm run db:migrate
-npm run db:seed
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
 ```
 
 The default SQLite datasource is `file:./dev.db` under `apps/backend/prisma`.

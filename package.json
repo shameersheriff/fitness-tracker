@@ -3,23 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "description": "Production-ready full-stack fitness tracking platform.",
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "packageManager": "pnpm@9.9.0",
   "scripts": {
-    "dev": "npm run build --workspace packages/shared-types && concurrently \"npm run dev --workspace apps/backend\" \"npm run dev --workspace apps/frontend\"",
-    "dev:frontend": "npm run dev --workspace apps/frontend",
-    "dev:backend": "npm run dev --workspace apps/backend",
-    "build": "npm run build --workspaces",
-    "lint": "npm run lint --workspaces --if-present",
+    "dev": "pnpm --filter @fitness-tracker/shared-types build && concurrently \"pnpm --filter @fitness-tracker/backend dev\" \"pnpm --filter @fitness-tracker/frontend dev\"",
+    "dev:frontend": "pnpm --filter @fitness-tracker/shared-types build && pnpm --filter @fitness-tracker/frontend dev",
+    "dev:backend": "pnpm --filter @fitness-tracker/shared-types build && pnpm --filter @fitness-tracker/backend dev",
+    "build": "pnpm -r --if-present run build",
+    "lint": "pnpm -r --if-present run lint",
     "lint-staged": "lint-staged",
-    "test": "npm run test --workspaces --if-present",
+    "test": "pnpm -r --if-present run test",
     "format": "prettier --write .",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "db:generate": "npm run db:generate --workspace apps/backend",
-    "db:migrate": "npm run db:migrate --workspace apps/backend",
-    "db:seed": "npm run db:seed --workspace apps/backend",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "db:generate": "pnpm --filter @fitness-tracker/backend db:generate",
+    "db:migrate": "pnpm --filter @fitness-tracker/backend db:migrate",
+    "db:seed": "pnpm --filter @fitness-tracker/backend db:seed",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -39,6 +36,6 @@
   },
   "engines": {
     "node": ">=20.11.0",
-    "npm": ">=10.0.0"
+    "pnpm": ">=9.9.0"
   }
 }
