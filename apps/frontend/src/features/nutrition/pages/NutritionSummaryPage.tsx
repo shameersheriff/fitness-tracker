@@ -13,12 +13,21 @@ export function NutritionSummaryPage() {
   const goalsQuery = useGoals();
   const nutritionQuery = useNutritionAnalytics();
   const dashboard = dashboardQuery.data;
+  const macros = dashboard?.macros ?? {
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fats: 0,
+    fiber: 0,
+    sugar: 0,
+    sodium: 0,
+  };
   const goal = goalsQuery.data?.[0] ?? dashboard?.nutritionGoal;
 
-  const caloriePercent = goal ? (dashboard?.macros.calories ?? 0) / goal.dailyCalories * 100 : 0;
-  const proteinPercent = goal ? (dashboard?.macros.protein ?? 0) / goal.protein * 100 : 0;
-  const carbPercent = goal ? (dashboard?.macros.carbs ?? 0) / goal.carbs * 100 : 0;
-  const fatPercent = goal ? (dashboard?.macros.fats ?? 0) / goal.fats * 100 : 0;
+  const caloriePercent = goal ? (macros.calories / goal.dailyCalories) * 100 : 0;
+  const proteinPercent = goal ? (macros.protein / goal.protein) * 100 : 0;
+  const carbPercent = goal ? (macros.carbs / goal.carbs) * 100 : 0;
+  const fatPercent = goal ? (macros.fats / goal.fats) * 100 : 0;
 
   return (
     <>
@@ -28,9 +37,24 @@ export function NutritionSummaryPage() {
         description="Daily targets, remaining intake, and macro consistency over time."
       />
       <div className="grid gap-4 md:grid-cols-3">
-        <StatTile icon={<Flame className="h-5 w-5" />} label="Calories" value={`${dashboard?.macros.calories ?? 0}`} detail={`${percent(caloriePercent)} of target`} />
-        <StatTile icon={<Wheat className="h-5 w-5" />} label="Protein" value={`${dashboard?.macros.protein ?? 0}g`} detail={`${percent(proteinPercent)} of target`} />
-        <StatTile icon={<Droplets className="h-5 w-5" />} label="Water Goal" value={`${goal?.waterMl ?? 0} ml`} detail="Daily hydration target" />
+        <StatTile
+          icon={<Flame className="h-5 w-5" />}
+          label="Calories"
+          value={`${macros.calories}`}
+          detail={`${percent(caloriePercent)} of target`}
+        />
+        <StatTile
+          icon={<Wheat className="h-5 w-5" />}
+          label="Protein"
+          value={`${macros.protein}g`}
+          detail={`${percent(proteinPercent)} of target`}
+        />
+        <StatTile
+          icon={<Droplets className="h-5 w-5" />}
+          label="Water Goal"
+          value={`${goal?.waterMl ?? 0} ml`}
+          detail="Daily hydration target"
+        />
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         <Panel>
