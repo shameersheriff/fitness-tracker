@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { AppLayout } from '@/components/layouts/AppLayout';
+import { RouteErrorFallback } from '@/components/common/RouteErrorFallback';
 import { AnalyticsPage } from '@/features/analytics/pages/AnalyticsPage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { GoalsPage } from '@/features/goals/pages/GoalsPage';
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: <AppLayout />,
+    errorElement: <RouteErrorFallback />,
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: 'dashboard', element: <DashboardPage /> },

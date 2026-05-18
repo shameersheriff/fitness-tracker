@@ -17,9 +17,19 @@ export function DashboardPage() {
 
   const dashboard = dashboardQuery.data;
   const weekly = weeklyQuery.data;
+  const workouts = dashboard?.workouts ?? [];
+  const macros = dashboard?.macros ?? {
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fats: 0,
+    fiber: 0,
+    sugar: 0,
+    sodium: 0,
+  };
   const goal = dashboard?.nutritionGoal;
-  const caloriePercent = goal ? (dashboard.macros.calories / goal.dailyCalories) * 100 : 0;
-  const proteinPercent = goal ? (dashboard.macros.protein / goal.protein) * 100 : 0;
+  const caloriePercent = goal ? (macros.calories / goal.dailyCalories) * 100 : 0;
+  const proteinPercent = goal ? (macros.protein / goal.protein) * 100 : 0;
 
   return (
     <>
@@ -41,19 +51,19 @@ export function DashboardPage() {
             detail={`${dashboard?.remainingWorkouts ?? 0} remaining`}
             icon={<Activity className="h-5 w-5" aria-hidden />}
             label="Workouts"
-            value={`${dashboard?.completedWorkouts ?? 0}/${dashboard?.workouts.length ?? 0}`}
+            value={`${dashboard?.completedWorkouts ?? 0}/${workouts.length}`}
           />
           <StatTile
-            detail={goal ? `${goal.dailyCalories - (dashboard?.macros.calories ?? 0)} remaining` : undefined}
+            detail={goal ? `${goal.dailyCalories - macros.calories} remaining` : undefined}
             icon={<Flame className="h-5 w-5" aria-hidden />}
             label="Calories"
-            value={formatNumber(dashboard?.macros.calories ?? 0)}
+            value={formatNumber(macros.calories)}
           />
           <StatTile
-            detail={goal ? `${Math.max(goal.protein - (dashboard?.macros.protein ?? 0), 0)} g remaining` : undefined}
+            detail={goal ? `${Math.max(goal.protein - macros.protein, 0)} g remaining` : undefined}
             icon={<Salad className="h-5 w-5" aria-hidden />}
             label="Protein"
-            value={`${dashboard?.macros.protein ?? 0} g`}
+            value={`${macros.protein} g`}
           />
           <StatTile
             detail="Current workout streak"
@@ -69,23 +79,34 @@ export function DashboardPage() {
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-bold text-ink dark:text-white">Today's Workouts</h2>
-              <p className="text-sm text-ink/60 dark:text-white/60">Planned load and completion status</p>
+              <p className="text-sm text-ink/60 dark:text-white/60">
+                Planned load and completion status
+              </p>
             </div>
-            <Badge tone="info">{weekly ? `${percent(weekly.completionRate)} weekly` : 'Weekly'}</Badge>
+            <Badge tone="info">
+              {weekly ? `${percent(weekly.completionRate)} weekly` : 'Weekly'}
+            </Badge>
           </div>
           <div className="divide-y divide-ink/10 dark:divide-white/10">
-            {(dashboard?.workouts ?? []).map((item) => (
-              <div key={item.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+            {workouts.map((item) => (
+              <div
+                key={item.id}
+                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <div>
                   <p className="font-semibold text-ink dark:text-white">{item.workout?.name}</p>
                   <p className="mt-1 text-sm text-ink/60 dark:text-white/60">
                     {item.targetSets ? `${item.targetSets} sets` : 'Timed'}
                     {item.targetReps ? ` x ${item.targetReps} reps` : ''}
                     {item.targetWeight ? ` at ${item.targetWeight} lb` : ''}
-                    {item.targetDurationSeconds ? ` for ${Math.round(item.targetDurationSeconds / 60)} min` : ''}
+                    {item.targetDurationSeconds
+                      ? ` for ${Math.round(item.targetDurationSeconds / 60)} min`
+                      : ''}
                   </p>
                 </div>
-                <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>{item.status}</Badge>
+                <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
+                  {item.status}
+                </Badge>
               </div>
             ))}
           </div>

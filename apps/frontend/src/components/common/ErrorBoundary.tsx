@@ -10,7 +10,7 @@ interface ErrorBoundaryState {
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = {
+  override state: ErrorBoundaryState = {
     hasError: false,
   };
 
@@ -18,11 +18,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  override componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('Unhandled application error', error, info);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <main className="flex min-h-screen items-center justify-center bg-cloud p-6 text-ink dark:bg-[#121816] dark:text-white">
