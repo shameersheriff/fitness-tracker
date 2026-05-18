@@ -1,0 +1,14 @@
+{
+  "name": "@fitness-tracker/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "peerDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@typescript-eslint/eslint-plugin": "^8.11.0",
+    "@typescript-eslint/parser": "^8.11.0",
+    "eslint": "^9.13.0",
+    "eslint-plugin-react-hooks": "^5.0.0"
+  }
+}

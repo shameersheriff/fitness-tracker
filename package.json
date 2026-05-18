@@ -1,0 +1,38 @@
+{
+  "name": "fitness-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Production-ready full-stack fitness tracking platform.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace apps/backend & npm run dev --workspace apps/frontend",
+    "dev:frontend": "npm run dev --workspace apps/frontend",
+    "dev:backend": "npm run dev --workspace apps/backend",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "format": "prettier --write .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "db:generate": "npm run db:generate --workspace apps/backend",
+    "db:migrate": "npm run db:migrate --workspace apps/backend",
+    "db:seed": "npm run db:seed --workspace apps/backend",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,md,css}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=20.11.0",
+    "npm": ">=10.0.0"
+  }
+}
