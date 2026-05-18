@@ -1,0 +1,444 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum GoalType {
+  FAT_LOSS
+  MUSCLE_GAIN
+  MAINTENANCE
+  STRENGTH_GAIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  PREFER_NOT_TO_SAY
+}
+
+enum ActivityLevel {
+  SEDENTARY
+  LIGHT
+  MODERATE
+  ACTIVE
+  VERY_ACTIVE
+}
+
+enum TrackingType {
+  SETS_REPS
+  TIME
+  STEPS
+  DISTANCE
+}
+
+enum MuscleGroup {
+  CHEST
+  BACK
+  LEGS
+  SHOULDERS
+  ARMS
+  CORE
+  CARDIO
+  FULL_BODY
+}
+
+enum EquipmentType {
+  BARBELL
+  DUMBBELL
+  MACHINE
+  CABLE
+  BODYWEIGHT
+  RESISTANCE_BAND
+  KETTLEBELL
+  NONE
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+enum DifficultyLevel {
+  VERY_EASY
+  EASY
+  MODERATE
+  HARD
+  MAX_EFFORT
+}
+
+enum Mood {
+  VERY_LOW
+  LOW
+  NEUTRAL
+  GOOD
+  GREAT
+}
+
+enum ScheduleStatus {
+  PLANNED
+  COMPLETED
+  SKIPPED
+}
+
+enum UnitSystem {
+  METRIC
+  IMPERIAL
+}
+
+enum WeekStartDay {
+  MONDAY
+  SUNDAY
+}
+
+model User {
+  id             String                 @id @default(cuid())
+  firstName      String
+  lastName       String
+  email          String                 @unique
+  age            Int?
+  gender         Gender?
+  height         Float?
+  currentWeight  Float?
+  targetWeight   Float?
+  activityLevel  ActivityLevel          @default(MODERATE)
+  goalType       GoalType?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  deletedAt      DateTime?
+
+  workoutTypes        WorkoutType[]
+  workouts            Workout[]
+  workoutTemplates    WorkoutTemplate[]
+  scheduledWorkouts   ScheduledWorkout[]
+  workoutSessions     WorkoutSession[]
+  meals               Meal[]
+  mealEntries         MealEntry[]
+  nutritionGoals      NutritionGoal[]
+  bodyProgressEntries BodyProgressEntry[]
+  habitLogs           HabitLog[]
+  analyticsSnapshots  AnalyticsSnapshot[]
+  settings            UserSettings?
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model WorkoutType {
+  id           String       @id @default(cuid())
+  userId       String?
+  name         String
+  description  String?
+  trackingType TrackingType
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workouts Workout[]
+
+  @@unique([userId, name])
+  @@index([trackingType])
+  @@index([deletedAt])
+  @@map("workout_types")
+}
+
+model Workout {
+  id             String        @id @default(cuid())
+  userId         String?
+  workoutTypeId  String?
+  name           String
+  description    String?
+  instructions   String?
+  tips           String?
+  notes          String?
+  videoUrl       String?
+  imageUrl       String?
+  muscleGroup    MuscleGroup
+  equipmentType  EquipmentType
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+
+  user               User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutType        WorkoutType?          @relation(fields: [workoutTypeId], references: [id], onDelete: SetNull)
+  templateItems      WorkoutTemplateItem[]
+  scheduledWorkouts  ScheduledWorkout[]
+  workoutSessions    WorkoutSession[]
+
+  @@index([userId, name])
+  @@index([workoutTypeId])
+  @@index([muscleGroup])
+  @@index([equipmentType])
+  @@index([deletedAt])
+  @@map("workouts")
+}
+
+model WorkoutTemplate {
+  id          String   @id @default(cuid())
+  userId      String?
+  name        String
+  description String?
+  splitType   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  user  User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items WorkoutTemplateItem[]
+
+  @@index([userId, name])
+  @@index([deletedAt])
+  @@map("workout_templates")
+}
+
+model WorkoutTemplateItem {
+  id                    String   @id @default(cuid())
+  templateId            String
+  workoutId             String?
+  position              Int
+  targetSets            Int?
+  targetReps            Int?
+  targetWeight          Float?
+  targetDurationSeconds Int?
+  targetDistanceKm      Float?
+  notes                 String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  template WorkoutTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  workout  Workout?        @relation(fields: [workoutId], references: [id], onDelete: SetNull)
+
+  @@unique([templateId, position])
+  @@index([workoutId])
+  @@map("workout_template_items")
+}
+
+model ScheduledWorkout {
+  id                    String         @id @default(cuid())
+  userId                String?
+  workoutId             String
+  scheduledDate         DateTime
+  position              Int            @default(1)
+  targetSets            Int?
+  targetReps            Int?
+  targetWeight          Float?
+  targetDurationSeconds Int?
+  targetDistanceKm      Float?
+  recurrenceRule        String?
+  status                ScheduleStatus @default(PLANNED)
+  completedAt           DateTime?
+  notes                 String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  deletedAt             DateTime?
+
+  user     User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workout  Workout          @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  sessions WorkoutSession[]
+
+  @@index([userId, scheduledDate])
+  @@index([workoutId])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("scheduled_workouts")
+}
+
+model WorkoutSession {
+  id                 String           @id @default(cuid())
+  userId             String?
+  workoutId          String
+  scheduledWorkoutId String?
+  sessionDate        DateTime         @default(now())
+  durationSeconds    Int?
+  steps              Int?
+  distanceKm         Float?
+  caloriesBurned     Int?
+  perceivedDifficulty DifficultyLevel?
+  energyLevel        Int?
+  notes              String?
+  completedAt        DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deletedAt          DateTime?
+
+  user             User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workout          Workout            @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  scheduledWorkout ScheduledWorkout?  @relation(fields: [scheduledWorkoutId], references: [id], onDelete: SetNull)
+  sets             WorkoutSessionSet[]
+
+  @@index([userId, sessionDate])
+  @@index([workoutId])
+  @@index([scheduledWorkoutId])
+  @@index([deletedAt])
+  @@map("workout_sessions")
+}
+
+model WorkoutSessionSet {
+  id              String   @id @default(cuid())
+  sessionId       String
+  setNumber       Int
+  reps            Int?
+  weight          Float?
+  restTimeSeconds Int?
+  durationSeconds Int?
+  distanceKm      Float?
+  completed       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  session WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, setNumber])
+  @@map("workout_session_sets")
+}
+
+model Meal {
+  id          String   @id @default(cuid())
+  userId      String?
+  title       String
+  description String?
+  mealType    MealType
+  protein     Float    @default(0)
+  carbs       Float    @default(0)
+  fats        Float    @default(0)
+  calories    Int      @default(0)
+  fiber       Float?
+  sugar       Float?
+  sodium      Float?
+  mealDate    DateTime
+  favorite    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  user    User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries MealEntry[]
+
+  @@index([userId, mealDate])
+  @@index([mealType])
+  @@index([favorite])
+  @@index([deletedAt])
+  @@map("meals")
+}
+
+model MealEntry {
+  id        String   @id @default(cuid())
+  userId    String?
+  mealId    String?
+  mealDate  DateTime
+  quantity  Float    @default(1)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  meal Meal? @relation(fields: [mealId], references: [id], onDelete: SetNull)
+
+  @@index([userId, mealDate])
+  @@index([mealId])
+  @@index([deletedAt])
+  @@map("meal_entries")
+}
+
+model NutritionGoal {
+  id            String   @id @default(cuid())
+  userId        String?
+  dailyCalories Int
+  protein       Float
+  carbs         Float
+  fats          Float
+  waterMl       Int
+  effectiveFrom DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, effectiveFrom])
+  @@index([deletedAt])
+  @@map("nutrition_goals")
+}
+
+model BodyProgressEntry {
+  id                String   @id @default(cuid())
+  userId            String?
+  entryDate         DateTime
+  bodyWeight        Float?
+  waist             Float?
+  chest             Float?
+  arms              Float?
+  thighs            Float?
+  hips              Float?
+  bodyFatPercentage Float?
+  photoUrl          String?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, entryDate])
+  @@index([deletedAt])
+  @@map("body_progress_entries")
+}
+
+model HabitLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  logDate     DateTime
+  waterMl     Int?
+  sleepHours  Float?
+  steps       Int?
+  mood        Mood?
+  soreness    Int?
+  energyLevel Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, logDate])
+  @@index([logDate])
+  @@map("habit_logs")
+}
+
+model AnalyticsSnapshot {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String
+  period    String
+  payload   String
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, name, period])
+  @@map("analytics_snapshots")
+}
+
+model UserSettings {
+  id                      String       @id @default(cuid())
+  userId                  String?      @unique
+  theme                   String       @default("system")
+  unitSystem              UnitSystem   @default(IMPERIAL)
+  distanceUnit            String       @default("MI")
+  notificationPreferences String       @default("{\"workouts\":true,\"meals\":true,\"water\":true,\"weighIns\":true}")
+  weekStartDay            WeekStartDay @default(MONDAY)
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("settings")
+}

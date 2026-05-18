@@ -1,0 +1,12 @@
+{
+  "extends": "@fitness-tracker/ts-config/node.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src", "prisma", "jest.config.ts"]
+}

@@ -20,7 +20,7 @@ export function WorkoutListPage() {
         description="Manage reusable strength, cardio, mobility, and conditioning exercises."
         action={
           <Link to="/workouts/new">
-            <Button icon={<Plus className="h-4 w-4" aria-hidden />}>New Workout</Button>
+            <Button as="span" icon={<Plus className="h-4 w-4" aria-hidden />}>New Workout</Button>
           </Link>
         }
       />
@@ -51,7 +51,7 @@ export function WorkoutListPage() {
           description="Create your first exercise and assign it to a workout type."
           action={
             <Link to="/workouts/new">
-              <Button icon={<Plus className="h-4 w-4" aria-hidden />}>New Workout</Button>
+              <Button as="span" icon={<Plus className="h-4 w-4" aria-hidden />}>New Workout</Button>
             </Link>
           }
         />
@@ -77,7 +77,7 @@ export function WorkoutListPage() {
               </div>
               <div className="mt-5 flex justify-end">
                 <Link to={`/workouts/${workout.id}/edit`}>
-                  <Button variant="secondary">Edit</Button>
+                  <Button as="span" variant="secondary">Edit</Button>
                 </Link>
               </div>
             </article>

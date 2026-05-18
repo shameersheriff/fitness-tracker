@@ -1,0 +1,8 @@
+import { Router } from 'express';
+
+import { dashboardController } from '../controllers/dashboard.controller';
+
+export const dashboardRouter = Router();
+
+dashboardRouter.get('/today', dashboardController.today);
+dashboardRouter.get('/weekly-summary', dashboardController.weeklySummary);

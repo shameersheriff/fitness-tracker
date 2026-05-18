@@ -4,15 +4,16 @@
   "private": true,
   "description": "Production-ready full-stack fitness tracking platform.",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace apps/backend & npm run dev --workspace apps/frontend",
+    "dev": "npm run build --workspace packages/shared-types && concurrently \"npm run dev --workspace apps/backend\" \"npm run dev --workspace apps/frontend\"",
     "dev:frontend": "npm run dev --workspace apps/frontend",
     "dev:backend": "npm run dev --workspace apps/backend",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces --if-present",
+    "lint-staged": "lint-staged",
     "test": "npm run test --workspaces --if-present",
     "format": "prettier --write .",
     "typecheck": "npm run typecheck --workspaces --if-present",
@@ -22,9 +23,14 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^9.13.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "typescript-eslint": "^8.11.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,md,css}": [
