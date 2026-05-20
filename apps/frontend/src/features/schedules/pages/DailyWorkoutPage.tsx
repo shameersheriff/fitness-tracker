@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, CheckCircle2, Play } from 'lucide-react';
+import { ArrowDown, ArrowUp, CheckCircle2, Pencil, Play, Trash2 } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
@@ -11,6 +12,7 @@ import { fitnessApi } from '@/services/fitnessApi';
 import type { ScheduledWorkout } from '@fitness-tracker/shared-types';
 
 export function DailyWorkoutPage() {
+  const [isEditMode, setIsEditMode] = useState(false);
   const queryClient = useQueryClient();
   const { notify } = useToast();
   const schedulesQuery = useTodaySchedules();
@@ -42,6 +44,42 @@ export function DailyWorkoutPage() {
       notify({ title: 'Workout order updated' });
     },
   });
+  const completeSchedule = useMutation({
+    mutationFn: fitnessApi.schedules.complete,
+    onSuccess: (updatedSchedule) => {
+      queryClient.setQueryData<ScheduledWorkout[]>(['schedules', 'today'], (current) =>
+        (current ?? []).map((item) => (item.id === updatedSchedule.id ? updatedSchedule : item)),
+      );
+      queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) =>
+        (current ?? []).map((item) => (item.id === updatedSchedule.id ? updatedSchedule : item)),
+      );
+      void queryClient.invalidateQueries({ queryKey: ['dashboard', 'today'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard', 'weekly-summary'] });
+      notify({ title: 'Workout completed' });
+    },
+  });
+  const deleteSchedule = useMutation({
+    mutationFn: fitnessApi.schedules.remove,
+    onSuccess: (_deleted, id) => {
+      queryClient.setQueryData<ScheduledWorkout[]>(['schedules', 'today'], (current) =>
+        (current ?? []).filter((item) => item.id !== id),
+      );
+      queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) =>
+        (current ?? []).filter((item) => item.id !== id),
+      );
+      notify({ title: 'Workout removed from planner' });
+    },
+  });
+
+  const handleDeleteSchedule = (item: ScheduledWorkout) => {
+    const confirmed = window.confirm(
+      `Remove ${item.workout?.name ?? 'this workout'} from the planner?`,
+    );
+
+    if (confirmed) {
+      deleteSchedule.mutate(item.id);
+    }
+  };
 
   const handleMove = (index: number, direction: -1 | 1) => {
     const targetIndex = index + direction;
@@ -69,6 +107,15 @@ export function DailyWorkoutPage() {
         eyebrow="Today"
         title="Daily Workout View"
         description="Execute the planned session and keep target work visible while logging actuals."
+        action={
+          <Button
+            icon={isEditMode ? undefined : <Pencil className="h-4 w-4" aria-hidden />}
+            onClick={() => setIsEditMode((value) => !value)}
+            variant={isEditMode ? 'primary' : 'secondary'}
+          >
+            {isEditMode ? 'Done' : 'Edit'}
+          </Button>
+        }
       />
       <div className="space-y-4">
         {schedules.map((item, index) => (
@@ -88,26 +135,44 @@ export function DailyWorkoutPage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button
-                  aria-label="Move workout up"
-                  disabled={index === 0 || reorderSchedules.isPending}
-                  icon={<ArrowUp className="h-4 w-4" aria-hidden />}
-                  onClick={() => handleMove(index, -1)}
-                  variant="ghost"
-                >
-                  Up
-                </Button>
-                <Button
-                  aria-label="Move workout down"
-                  disabled={index === schedules.length - 1 || reorderSchedules.isPending}
-                  icon={<ArrowDown className="h-4 w-4" aria-hidden />}
-                  onClick={() => handleMove(index, 1)}
-                  variant="ghost"
-                >
-                  Down
-                </Button>
+                {isEditMode && (
+                  <>
+                    <Button
+                      aria-label="Move workout up"
+                      disabled={index === 0 || reorderSchedules.isPending}
+                      icon={<ArrowUp className="h-4 w-4" aria-hidden />}
+                      onClick={() => handleMove(index, -1)}
+                      variant="ghost"
+                    >
+                      Up
+                    </Button>
+                    <Button
+                      aria-label="Move workout down"
+                      disabled={index === schedules.length - 1 || reorderSchedules.isPending}
+                      icon={<ArrowDown className="h-4 w-4" aria-hidden />}
+                      onClick={() => handleMove(index, 1)}
+                      variant="ghost"
+                    >
+                      Down
+                    </Button>
+                    <Button
+                      icon={<Trash2 className="h-4 w-4" aria-hidden />}
+                      onClick={() => handleDeleteSchedule(item)}
+                      type="button"
+                      variant="ghost"
+                    >
+                      Delete
+                    </Button>
+                  </>
+                )}
                 <Button icon={<Play className="h-4 w-4" aria-hidden />}>Start</Button>
-                <Button icon={<CheckCircle2 className="h-4 w-4" aria-hidden />} variant="secondary">
+                <Button
+                  disabled={item.status === 'COMPLETED' || completeSchedule.isPending}
+                  icon={<CheckCircle2 className="h-4 w-4" aria-hidden />}
+                  onClick={() => completeSchedule.mutate(item.id)}
+                  type="button"
+                  variant="secondary"
+                >
                   Complete
                 </Button>
               </div>

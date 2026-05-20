@@ -88,7 +88,12 @@ export class SchedulesService {
   }
 
   async complete(id: string, userId?: string) {
-    await this.getById(id, userId);
+    const schedule = await this.getById(id, userId);
+
+    if (schedule.status === 'COMPLETED') {
+      return schedule;
+    }
+
     return this.repository.complete(id);
   }
 
