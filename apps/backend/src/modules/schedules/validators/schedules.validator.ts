@@ -26,3 +26,7 @@ export const scheduleQuerySchema = z.object({
   to: z.coerce.date().optional(),
   status: scheduleStatusSchema.optional(),
 });
+
+export const reorderDaySchedulesSchema = z.object({
+  scheduleIds: z.array(z.string().min(1)).min(1),
+});

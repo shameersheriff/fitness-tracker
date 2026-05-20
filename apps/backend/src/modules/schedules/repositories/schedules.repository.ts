@@ -62,6 +62,43 @@ export class SchedulesRepository {
     });
   }
 
+  async reorderDay(scheduleIds: string[], date: Date, userId?: string) {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 1);
+
+    return prisma.$transaction(async (tx) => {
+      for (const [index, id] of scheduleIds.entries()) {
+        await tx.scheduledWorkout.updateMany({
+          where: {
+            id,
+            userId,
+            deletedAt: null,
+            scheduledDate: {
+              gte: start,
+              lt: end,
+            },
+          },
+          data: { position: index + 1 },
+        });
+      }
+
+      return tx.scheduledWorkout.findMany({
+        where: {
+          userId,
+          deletedAt: null,
+          scheduledDate: {
+            gte: start,
+            lt: end,
+          },
+        },
+        include: { workout: { include: { workoutType: true } } },
+        orderBy: { position: 'asc' },
+      });
+    });
+  }
+
   async create(data: CreateScheduledWorkoutDto, userId?: string) {
     return prisma.scheduledWorkout.create({
       data: { ...data, userId },
