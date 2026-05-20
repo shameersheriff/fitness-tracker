@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addDays, format, isSameDay, startOfWeek } from 'date-fns';
-import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Pencil } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
@@ -59,6 +59,7 @@ const initialWorkoutForm: WorkoutForm = {
 export function WeeklyPlannerPage() {
   const [isCreateWorkoutModalOpen, setIsCreateWorkoutModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [workoutForm, setWorkoutForm] = useState(initialWorkoutForm);
   const queryClient = useQueryClient();
@@ -203,8 +204,12 @@ export function WeeklyPlannerPage() {
         description="Arrange workouts across the week with room for templates, recurrence, and rest days."
         action={
           <>
-            <Button icon={<Copy className="h-4 w-4" aria-hidden />} variant="secondary">
-              Duplicate
+            <Button
+              icon={isEditMode ? undefined : <Pencil className="h-4 w-4" aria-hidden />}
+              variant={isEditMode ? 'primary' : 'secondary'}
+              onClick={() => setIsEditMode((v) => !v)}
+            >
+              {isEditMode ? 'Done' : 'Edit'}
             </Button>
             <Button
               icon={<Plus className="h-4 w-4" aria-hidden />}
@@ -250,30 +255,32 @@ export function WeeklyPlannerPage() {
                           <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
                             {item.status}
                           </Badge>
-                          <div className="flex flex-col w-full justify-end gap-2">
-                            <Button
-                              aria-label="Move workout up"
-                              disabled={index === 0 || reorderByDate.isPending}
-                              icon={<ArrowUp className="h-4 w-4" aria-hidden />}
-                              onClick={() => handleMoveWithinDay(day, index, -1)}
-                              type="button"
-                              variant="ghost"
-                            ></Button>
-                            <Button
-                              aria-label="Move workout down"
-                              disabled={index === dayItems.length - 1 || reorderByDate.isPending}
-                              icon={<ArrowDown className="h-4 w-4" aria-hidden />}
-                              onClick={() => handleMoveWithinDay(day, index, 1)}
-                              type="button"
-                              variant="ghost"
-                            ></Button>
-                            <Button
-                              icon={<Trash2 className="h-4 w-4" aria-hidden />}
-                              onClick={() => handleDeleteSchedule(item)}
-                              type="button"
-                              variant="ghost"
-                            ></Button>
-                          </div>
+                          {isEditMode && (
+                            <div className="flex flex-col w-full justify-end gap-2">
+                              <Button
+                                aria-label="Move workout up"
+                                disabled={index === 0 || reorderByDate.isPending}
+                                icon={<ArrowUp className="h-4 w-4" aria-hidden />}
+                                onClick={() => handleMoveWithinDay(day, index, -1)}
+                                type="button"
+                                variant="ghost"
+                              ></Button>
+                              <Button
+                                aria-label="Move workout down"
+                                disabled={index === dayItems.length - 1 || reorderByDate.isPending}
+                                icon={<ArrowDown className="h-4 w-4" aria-hidden />}
+                                onClick={() => handleMoveWithinDay(day, index, 1)}
+                                type="button"
+                                variant="ghost"
+                              ></Button>
+                              <Button
+                                icon={<Trash2 className="h-4 w-4" aria-hidden />}
+                                onClick={() => handleDeleteSchedule(item)}
+                                type="button"
+                                variant="ghost"
+                              ></Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
