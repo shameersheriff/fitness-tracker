@@ -21,34 +21,21 @@ apiClient.interceptors.response.use(
   },
 );
 
-export async function getData<TData>(url: string, fallback: TData): Promise<TData> {
-  try {
-    const response = await apiClient.get<ApiSuccess<TData> | PaginatedApiSuccess<TData>>(url);
-    return response.data.data as TData;
-  } catch {
-    return fallback;
-  }
+export async function getDataStrict<TData>(url: string): Promise<TData> {
+  const response = await apiClient.get<ApiSuccess<TData> | PaginatedApiSuccess<TData>>(url);
+  return response.data.data as TData;
 }
 
-export async function sendData<TInput, TOutput>(
+export async function sendDataStrict<TInput, TOutput>(
   url: string,
   input: TInput,
-  fallback: TOutput,
   method: 'post' | 'put' | 'patch' = 'post',
 ): Promise<TOutput> {
-  try {
-    const response = await apiClient[method]<ApiSuccess<TOutput>>(url, input);
-    return response.data.data;
-  } catch {
-    return fallback;
-  }
+  const response = await apiClient[method]<ApiSuccess<TOutput>>(url, input);
+  return response.data.data;
 }
 
 export async function deleteData(url: string): Promise<boolean> {
-  try {
-    await apiClient.delete(url);
-    return true;
-  } catch {
-    return true;
-  }
+  await apiClient.delete(url);
+  return true;
 }

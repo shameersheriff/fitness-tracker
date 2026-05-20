@@ -13,7 +13,12 @@ import { Modal } from '@/components/ui/Modal';
 import { Panel } from '@/components/ui/Panel';
 import { useSchedules, useWorkouts } from '@/hooks/useFitnessData';
 import { fitnessApi } from '@/services/fitnessApi';
-import type { ScheduledWorkout } from '@fitness-tracker/shared-types';
+import {
+  equipmentTypes,
+  muscleGroups,
+  type ScheduledWorkout,
+  type Workout,
+} from '@fitness-tracker/shared-types';
 
 type ScheduleForm = {
   notes: string;
@@ -22,6 +27,14 @@ type ScheduleForm = {
   targetSets: string;
   targetWeight: string;
   workoutId: string;
+};
+
+type WorkoutForm = {
+  description: string;
+  equipmentType: Workout['equipmentType'];
+  instructions: string;
+  muscleGroup: Workout['muscleGroup'];
+  name: string;
 };
 
 const todayInputValue = new Date().toISOString().slice(0, 10);
@@ -35,9 +48,19 @@ const initialForm: ScheduleForm = {
   workoutId: '',
 };
 
+const initialWorkoutForm: WorkoutForm = {
+  description: '',
+  equipmentType: 'BARBELL',
+  instructions: '',
+  muscleGroup: 'CHEST',
+  name: '',
+};
+
 export function WeeklyPlannerPage() {
+  const [isCreateWorkoutModalOpen, setIsCreateWorkoutModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [workoutForm, setWorkoutForm] = useState(initialWorkoutForm);
   const queryClient = useQueryClient();
   const { notify } = useToast();
   const schedulesQuery = useSchedules();
@@ -58,6 +81,16 @@ export function WeeklyPlannerPage() {
       notify({ title: 'Workout scheduled' });
     },
   });
+  const createWorkout = useMutation({
+    mutationFn: fitnessApi.workouts.create,
+    onSuccess: (workout) => {
+      queryClient.setQueryData<Workout[]>(['workouts'], (current) => [workout, ...(current ?? [])]);
+      setForm((current) => ({ ...current, workoutId: workout.id }));
+      setWorkoutForm(initialWorkoutForm);
+      setIsCreateWorkoutModalOpen(false);
+      notify({ title: 'Workout created' });
+    },
+  });
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,6 +108,17 @@ export function WeeklyPlannerPage() {
       targetReps: form.targetReps ? Number(form.targetReps) : undefined,
       targetWeight: form.targetWeight ? Number(form.targetWeight) : undefined,
       notes: form.notes || undefined,
+    });
+  };
+
+  const handleCreateWorkoutSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    createWorkout.mutate({
+      description: workoutForm.description.trim() || undefined,
+      equipmentType: workoutForm.equipmentType,
+      instructions: workoutForm.instructions.trim() || undefined,
+      muscleGroup: workoutForm.muscleGroup,
+      name: workoutForm.name.trim(),
     });
   };
 
@@ -161,6 +205,15 @@ export function WeeklyPlannerPage() {
             required
             value={form.workoutId || workouts[0]?.id || ''}
           />
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setIsCreateWorkoutModalOpen(true)}
+              type="button"
+              variant="secondary"
+            >
+              Create Workout
+            </Button>
+          </div>
           <TextField
             label="Date"
             onChange={(event) =>
@@ -210,6 +263,83 @@ export function WeeklyPlannerPage() {
             </Button>
             <Button disabled={createSchedule.isPending || workouts.length === 0} type="submit">
               Add Workout
+            </Button>
+          </div>
+        </form>
+      </Modal>
+      <Modal
+        description="Create a workout in your library, then attach it to the weekly plan."
+        onClose={() => {
+          setIsCreateWorkoutModalOpen(false);
+          setWorkoutForm(initialWorkoutForm);
+        }}
+        open={isCreateWorkoutModalOpen}
+        title="Create Workout"
+      >
+        <form className="grid gap-4" onSubmit={handleCreateWorkoutSubmit}>
+          <TextField
+            label="Workout name"
+            onChange={(event) =>
+              setWorkoutForm((current) => ({ ...current, name: event.target.value }))
+            }
+            required
+            value={workoutForm.name}
+          />
+          <TextField
+            label="Description"
+            onChange={(event) =>
+              setWorkoutForm((current) => ({ ...current, description: event.target.value }))
+            }
+            value={workoutForm.description}
+          />
+          <SelectField
+            label="Muscle group"
+            onChange={(event) =>
+              setWorkoutForm((current) => ({
+                ...current,
+                muscleGroup: event.target.value as Workout['muscleGroup'],
+              }))
+            }
+            options={muscleGroups.map((group) => ({
+              label: group.replace('_', ' '),
+              value: group,
+            }))}
+            value={workoutForm.muscleGroup}
+          />
+          <SelectField
+            label="Equipment"
+            onChange={(event) =>
+              setWorkoutForm((current) => ({
+                ...current,
+                equipmentType: event.target.value as Workout['equipmentType'],
+              }))
+            }
+            options={equipmentTypes.map((type) => ({ label: type.replace('_', ' '), value: type }))}
+            value={workoutForm.equipmentType}
+          />
+          <label className="block">
+            <span className="text-sm font-semibold text-ink dark:text-white">Instructions</span>
+            <textarea
+              className="mt-2 min-h-24 w-full rounded-md border border-ink/10 bg-white px-3 py-2 text-sm text-ink shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-white"
+              onChange={(event) =>
+                setWorkoutForm((current) => ({ ...current, instructions: event.target.value }))
+              }
+              value={workoutForm.instructions}
+            />
+          </label>
+          <div className="flex justify-end gap-3">
+            <Button
+              onClick={() => {
+                setIsCreateWorkoutModalOpen(false);
+                setWorkoutForm(initialWorkoutForm);
+              }}
+              type="button"
+              variant="secondary"
+            >
+              Cancel
+            </Button>
+            <Button disabled={createWorkout.isPending} type="submit">
+              Save Workout
             </Button>
           </div>
         </form>
