@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { Panel } from '@/components/ui/Panel';
 import { useTodaySchedules } from '@/hooks/useFitnessData';
 import { fitnessApi } from '@/services/fitnessApi';
@@ -13,6 +14,7 @@ import type { ScheduledWorkout } from '@fitness-tracker/shared-types';
 
 export function DailyWorkoutPage() {
   const [isEditMode, setIsEditMode] = useState(false);
+  const [scheduleToComplete, setScheduleToComplete] = useState<ScheduledWorkout | null>(null);
   const queryClient = useQueryClient();
   const { notify } = useToast();
   const schedulesQuery = useTodaySchedules();
@@ -101,6 +103,18 @@ export function DailyWorkoutPage() {
     reorderSchedules.mutate({ scheduleIds: reordered.map((item) => item.id) });
   };
 
+  const handleConfirmComplete = () => {
+    if (!scheduleToComplete) {
+      return;
+    }
+
+    completeSchedule.mutate(scheduleToComplete.id, {
+      onSuccess: () => {
+        setScheduleToComplete(null);
+      },
+    });
+  };
+
   return (
     <>
       <PageHeader
@@ -169,7 +183,7 @@ export function DailyWorkoutPage() {
                 <Button
                   disabled={item.status === 'COMPLETED' || completeSchedule.isPending}
                   icon={<CheckCircle2 className="h-4 w-4" aria-hidden />}
-                  onClick={() => completeSchedule.mutate(item.id)}
+                  onClick={() => setScheduleToComplete(item)}
                   type="button"
                   variant="secondary"
                 >
@@ -180,6 +194,34 @@ export function DailyWorkoutPage() {
           </Panel>
         ))}
       </div>
+      <Modal
+        description={
+          scheduleToComplete
+            ? `Mark ${scheduleToComplete.workout?.name ?? 'this workout'} as completed?`
+            : 'Mark this workout as completed?'
+        }
+        footer={
+          <>
+            <Button onClick={() => setScheduleToComplete(null)} type="button" variant="secondary">
+              No
+            </Button>
+            <Button
+              disabled={!scheduleToComplete || completeSchedule.isPending}
+              onClick={handleConfirmComplete}
+              type="button"
+            >
+              Yes
+            </Button>
+          </>
+        }
+        onClose={() => setScheduleToComplete(null)}
+        open={Boolean(scheduleToComplete)}
+        title="Complete Workout"
+      >
+        <p className="text-sm leading-6 text-ink/70 dark:text-white/70">
+          Completing a workout updates its status and today&apos;s progress summary.
+        </p>
+      </Modal>
     </>
   );
 }
