@@ -258,9 +258,7 @@ export function WeeklyPlannerPage() {
                               onClick={() => handleMoveWithinDay(day, index, -1)}
                               type="button"
                               variant="ghost"
-                            >
-                              Up
-                            </Button>
+                            ></Button>
                             <Button
                               aria-label="Move workout down"
                               disabled={index === dayItems.length - 1 || reorderByDate.isPending}
@@ -268,18 +266,14 @@ export function WeeklyPlannerPage() {
                               onClick={() => handleMoveWithinDay(day, index, 1)}
                               type="button"
                               variant="ghost"
-                            >
-                              Down
-                            </Button>
+                            ></Button>
+                            <Button
+                              icon={<Trash2 className="h-4 w-4" aria-hidden />}
+                              onClick={() => handleDeleteSchedule(item)}
+                              type="button"
+                              variant="ghost"
+                            ></Button>
                           </div>
-                          <Button
-                            icon={<Trash2 className="h-4 w-4" aria-hidden />}
-                            onClick={() => handleDeleteSchedule(item)}
-                            type="button"
-                            variant="ghost"
-                          >
-                            Delete
-                          </Button>
                         </div>
                       </div>
                     </div>
