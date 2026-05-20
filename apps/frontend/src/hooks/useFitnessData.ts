@@ -37,10 +37,10 @@ export function useSchedules() {
   });
 }
 
-export function useTodaySchedules() {
+export function useTodaySchedules(date?: string) {
   return useQuery({
-    queryKey: ['schedules', 'today'],
-    queryFn: fitnessApi.schedules.today,
+    queryKey: ['schedules', 'day', date ?? 'today'],
+    queryFn: () => fitnessApi.schedules.today(date),
   });
 }
 

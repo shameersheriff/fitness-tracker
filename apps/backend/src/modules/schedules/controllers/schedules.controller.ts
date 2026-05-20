@@ -15,7 +15,8 @@ export const schedulesController = {
     return paginated(res, 'Scheduled workouts fetched successfully', result.data, result.meta);
   }),
   getByDay: asyncHandler(async (req, res) => {
-    const data = await service.getByDay(req.userContext.userId);
+    const date = req.query.date ? new Date(req.query.date as string) : new Date();
+    const data = await service.getByDay(date, req.userContext.userId);
     return ok(res, 'Daily schedule fetched successfully', data);
   }),
   reorderDay: asyncHandler(async (req, res) => {

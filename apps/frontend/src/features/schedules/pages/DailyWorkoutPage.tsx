@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, CheckCircle2, Pencil, Play, Trash2 } from 'lucide-react';
+import { addDays, format, isToday } from 'date-fns';
+import {
+  ArrowDown,
+  ArrowUp,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  Play,
+  Trash2,
+} from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
@@ -15,15 +25,19 @@ import type { ScheduledWorkout } from '@fitness-tracker/shared-types';
 export function DailyWorkoutPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [scheduleToComplete, setScheduleToComplete] = useState<ScheduledWorkout | null>(null);
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const dateStr = format(selectedDate, 'yyyy-MM-dd');
   const queryClient = useQueryClient();
   const { notify } = useToast();
-  const schedulesQuery = useTodaySchedules();
+  const schedulesQuery = useTodaySchedules(dateStr);
   const schedules = schedulesQuery.data ?? [];
 
+  const dayLabel = isToday(selectedDate) ? 'Today' : format(selectedDate, 'EEEE, MMM d');
+
   const reorderSchedules = useMutation({
-    mutationFn: fitnessApi.schedules.reorderToday,
+    mutationFn: fitnessApi.schedules.reorderByDate,
     onSuccess: (updatedSchedules) => {
-      queryClient.setQueryData<ScheduledWorkout[]>(['schedules', 'today'], updatedSchedules);
+      queryClient.setQueryData<ScheduledWorkout[]>(['schedules', 'day', dateStr], updatedSchedules);
       queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) => {
         if (!current) {
           return current;
@@ -49,7 +63,7 @@ export function DailyWorkoutPage() {
   const completeSchedule = useMutation({
     mutationFn: fitnessApi.schedules.complete,
     onSuccess: (updatedSchedule) => {
-      queryClient.setQueryData<ScheduledWorkout[]>(['schedules', 'today'], (current) =>
+      queryClient.setQueryData<ScheduledWorkout[]>(['schedules', 'day', dateStr], (current) =>
         (current ?? []).map((item) => (item.id === updatedSchedule.id ? updatedSchedule : item)),
       );
       queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) =>
@@ -63,7 +77,7 @@ export function DailyWorkoutPage() {
   const deleteSchedule = useMutation({
     mutationFn: fitnessApi.schedules.remove,
     onSuccess: (_deleted, id) => {
-      queryClient.setQueryData<ScheduledWorkout[]>(['schedules', 'today'], (current) =>
+      queryClient.setQueryData<ScheduledWorkout[]>(['schedules', 'day', dateStr], (current) =>
         (current ?? []).filter((item) => item.id !== id),
       );
       queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) =>
@@ -100,7 +114,12 @@ export function DailyWorkoutPage() {
 
     reordered[index] = targetItem;
     reordered[targetIndex] = currentItem;
-    reorderSchedules.mutate({ scheduleIds: reordered.map((item) => item.id) });
+    const isoDate = new Date(selectedDate);
+    isoDate.setHours(0, 0, 0, 0);
+    reorderSchedules.mutate({
+      date: isoDate.toISOString(),
+      scheduleIds: reordered.map((item) => item.id),
+    });
   };
 
   const handleConfirmComplete = () => {
@@ -118,17 +137,32 @@ export function DailyWorkoutPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Today"
+        eyebrow={dayLabel}
         title="Daily Workout View"
         description="Execute the planned session and keep target work visible while logging actuals."
         action={
-          <Button
-            icon={isEditMode ? undefined : <Pencil className="h-4 w-4" aria-hidden />}
-            onClick={() => setIsEditMode((value) => !value)}
-            variant={isEditMode ? 'primary' : 'secondary'}
-          >
-            {isEditMode ? 'Done' : 'Edit'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              aria-label="Previous day"
+              icon={<ChevronLeft className="h-4 w-4" aria-hidden />}
+              onClick={() => setSelectedDate((d) => addDays(d, -1))}
+              variant="ghost"
+            />
+            <Button
+              aria-label="Next day"
+              disabled={isToday(selectedDate)}
+              icon={<ChevronRight className="h-4 w-4" aria-hidden />}
+              onClick={() => setSelectedDate((d) => addDays(d, 1))}
+              variant="ghost"
+            />
+            <Button
+              icon={isEditMode ? undefined : <Pencil className="h-4 w-4" aria-hidden />}
+              onClick={() => setIsEditMode((value) => !value)}
+              variant={isEditMode ? 'primary' : 'secondary'}
+            >
+              {isEditMode ? 'Done' : 'Edit'}
+            </Button>
+          </div>
         }
       />
       <div className="space-y-4">

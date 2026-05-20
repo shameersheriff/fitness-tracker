@@ -36,7 +36,10 @@ export const fitnessApi = {
   },
   schedules: {
     list: () => getDataStrict<ScheduledWorkout[]>('/schedules'),
-    today: () => getDataStrict<ScheduledWorkout[]>('/schedules/day'),
+    today: (date?: string) =>
+      getDataStrict<ScheduledWorkout[]>(
+        date ? `/schedules/day?date=${encodeURIComponent(date)}` : '/schedules/day',
+      ),
     complete: (id: string) =>
       sendDataStrict<undefined, ScheduledWorkout>(`/schedules/${id}/complete`, undefined, 'patch'),
     reorderToday: (payload: { scheduleIds: string[] }) =>

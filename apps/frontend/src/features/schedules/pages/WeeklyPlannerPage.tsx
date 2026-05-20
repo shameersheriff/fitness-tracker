@@ -1,7 +1,16 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addDays, format, isSameDay, startOfWeek } from 'date-fns';
-import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Pencil } from 'lucide-react';
+import { addDays, addWeeks, format, isSameDay, startOfWeek } from 'date-fns';
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Plus,
+  Trash2,
+  Pencil,
+} from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
@@ -60,6 +69,7 @@ export function WeeklyPlannerPage() {
   const [isCreateWorkoutModalOpen, setIsCreateWorkoutModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [weekOffset, setWeekOffset] = useState(0);
   const [form, setForm] = useState(initialForm);
   const [workoutForm, setWorkoutForm] = useState(initialWorkoutForm);
   const queryClient = useQueryClient();
@@ -68,8 +78,10 @@ export function WeeklyPlannerPage() {
   const workoutsQuery = useWorkouts();
   const schedules = schedulesQuery.data ?? [];
   const workouts = workoutsQuery.data ?? [];
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekStart = startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
+  const weekEnd = days[6]!;
+  const weekLabel = `${format(weekStart, 'MMM d')} – ${format(weekEnd, 'MMM d, yyyy')}`;
   const createSchedule = useMutation({
     mutationFn: fitnessApi.schedules.create,
     onSuccess: (scheduledWorkout) => {
@@ -203,21 +215,41 @@ export function WeeklyPlannerPage() {
         title="Weekly Planner"
         description="Arrange workouts across the week with room for templates, recurrence, and rest days."
         action={
-          <>
-            <Button
-              icon={isEditMode ? undefined : <Pencil className="h-4 w-4" aria-hidden />}
-              variant={isEditMode ? 'primary' : 'secondary'}
-              onClick={() => setIsEditMode((v) => !v)}
-            >
-              {isEditMode ? 'Done' : 'Edit'}
-            </Button>
-            <Button
-              icon={<Plus className="h-4 w-4" aria-hidden />}
-              onClick={() => setIsModalOpen(true)}
-            >
-              Add Workout
-            </Button>
-          </>
+          <div className="flex flex-col w-full mt-2">
+            <div className="flex items-center gap-2">
+              <Button
+                aria-label="Previous week"
+                icon={<ChevronLeft className="h-4 w-4" aria-hidden />}
+                onClick={() => setWeekOffset((n) => n - 1)}
+                variant="ghost"
+              />
+              <span className="whitespace-nowrap text-sm font-medium text-ink/70 dark:text-white/70">
+                {weekLabel}
+              </span>
+              <Button
+                aria-label="Next week"
+                disabled={weekOffset >= 0}
+                icon={<ChevronRight className="h-4 w-4" aria-hidden />}
+                onClick={() => setWeekOffset((n) => n + 1)}
+                variant="ghost"
+              />
+            </div>
+            <div className="flex flex-row justify-between w-full mt-2">
+              <Button
+                icon={isEditMode ? undefined : <Pencil className="h-4 w-4" aria-hidden />}
+                variant={isEditMode ? 'primary' : 'secondary'}
+                onClick={() => setIsEditMode((v) => !v)}
+              >
+                {isEditMode ? 'Done' : 'Edit'}
+              </Button>
+              <Button
+                icon={<Plus className="h-4 w-4" aria-hidden />}
+                onClick={() => setIsModalOpen(true)}
+              >
+                Add Workout
+              </Button>
+            </div>
+          </div>
         }
       />
       <div className="grid gap-4 xl:grid-cols-7">
@@ -250,38 +282,40 @@ export function WeeklyPlannerPage() {
                         {item.targetSets ? `${item.targetSets} sets` : 'Timed'}
                         {item.targetReps ? ` x ${item.targetReps}` : ''}
                       </p>
-                      <div className="mt-3">
-                        <div className="flex flex-col items-center justify-between gap-2">
-                          <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
-                            {item.status}
-                          </Badge>
-                          {isEditMode && (
-                            <div className="flex flex-col w-full justify-end gap-2">
-                              <Button
-                                aria-label="Move workout up"
-                                disabled={index === 0 || reorderByDate.isPending}
-                                icon={<ArrowUp className="h-4 w-4" aria-hidden />}
-                                onClick={() => handleMoveWithinDay(day, index, -1)}
-                                type="button"
-                                variant="ghost"
-                              ></Button>
-                              <Button
-                                aria-label="Move workout down"
-                                disabled={index === dayItems.length - 1 || reorderByDate.isPending}
-                                icon={<ArrowDown className="h-4 w-4" aria-hidden />}
-                                onClick={() => handleMoveWithinDay(day, index, 1)}
-                                type="button"
-                                variant="ghost"
-                              ></Button>
-                              <Button
-                                icon={<Trash2 className="h-4 w-4" aria-hidden />}
-                                onClick={() => handleDeleteSchedule(item)}
-                                type="button"
-                                variant="ghost"
-                              ></Button>
-                            </div>
-                          )}
-                        </div>
+                      <div className="mt-3 flex items-center justify-between gap-1">
+                        <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
+                          {item.status}
+                        </Badge>
+                        {isEditMode && (
+                          <div className="flex items-center gap-0.5">
+                            <Button
+                              aria-label="Move workout up"
+                              className="h-7 w-7 min-h-7 p-0"
+                              disabled={index === 0 || reorderByDate.isPending}
+                              icon={<ArrowUp className="h-3.5 w-3.5" aria-hidden />}
+                              onClick={() => handleMoveWithinDay(day, index, -1)}
+                              type="button"
+                              variant="ghost"
+                            />
+                            <Button
+                              aria-label="Move workout down"
+                              className="h-7 w-7 min-h-7 p-0"
+                              disabled={index === dayItems.length - 1 || reorderByDate.isPending}
+                              icon={<ArrowDown className="h-3.5 w-3.5" aria-hidden />}
+                              onClick={() => handleMoveWithinDay(day, index, 1)}
+                              type="button"
+                              variant="ghost"
+                            />
+                            <Button
+                              aria-label="Delete workout"
+                              className="h-7 w-7 min-h-7 p-0"
+                              icon={<Trash2 className="h-3.5 w-3.5" aria-hidden />}
+                              onClick={() => handleDeleteSchedule(item)}
+                              type="button"
+                              variant="ghost"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))

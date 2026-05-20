@@ -38,8 +38,8 @@ export class SchedulesService {
     return schedule;
   }
 
-  async getByDay(userId?: string) {
-    return this.repository.findByDay(new Date(), userId);
+  async getByDay(date: Date = new Date(), userId?: string) {
+    return this.repository.findByDay(date, userId);
   }
 
   async reorderDay(data: ReorderDaySchedulesDto, userId?: string) {
