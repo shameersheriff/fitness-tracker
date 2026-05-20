@@ -17,11 +17,6 @@ coverage/
 !.env.example
 
 # databases
-*.db
-*.db-journal
-*.sqlite
-*.sqlite3
-apps/backend/prisma/dev.db
 
 # logs
 logs/
