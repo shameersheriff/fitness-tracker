@@ -24,7 +24,11 @@ export function SelectField({ className, error, id, label, options, ...props }: 
         {...props}
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option
+            className="bg-white text-ink dark:bg-[#141b19] dark:text-white"
+            key={option.value}
+            value={option.value}
+          >
             {option.label}
           </option>
         ))}
