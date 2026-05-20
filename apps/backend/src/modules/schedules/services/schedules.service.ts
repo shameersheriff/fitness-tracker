@@ -5,6 +5,7 @@ import { getPagination, getPaginationMeta } from '@/common/utils/pagination';
 import type {
   CreateScheduledWorkoutDto,
   ReorderDaySchedulesDto,
+  ReorderSchedulesByDateDto,
   ScheduleQueryDto,
   UpdateScheduledWorkoutDto,
 } from '../dto/schedule.dto';
@@ -57,6 +58,24 @@ export class SchedulesService {
     }
 
     return this.repository.reorderDay(data.scheduleIds, new Date(), userId);
+  }
+
+  async reorderByDate(data: ReorderSchedulesByDateDto, userId?: string) {
+    const daySchedules = await this.repository.findByDay(data.date, userId);
+
+    if (daySchedules.length !== data.scheduleIds.length) {
+      throw new AppError('Invalid workout order payload', httpStatus.BAD_REQUEST);
+    }
+
+    const dayIds = new Set(daySchedules.map((schedule: { id: string }) => schedule.id));
+    const hasUnknownIds = data.scheduleIds.some((id: string) => !dayIds.has(id));
+    const hasDuplicates = new Set(data.scheduleIds).size !== data.scheduleIds.length;
+
+    if (hasUnknownIds || hasDuplicates) {
+      throw new AppError('Invalid workout order payload', httpStatus.BAD_REQUEST);
+    }
+
+    return this.repository.reorderDay(data.scheduleIds, data.date, userId);
   }
 
   async create(data: CreateScheduledWorkoutDto, userId?: string) {

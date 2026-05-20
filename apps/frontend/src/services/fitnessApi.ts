@@ -43,6 +43,12 @@ export const fitnessApi = {
         payload,
         'patch',
       ),
+    reorderByDate: (payload: { date: string; scheduleIds: string[] }) =>
+      sendDataStrict<{ date: string; scheduleIds: string[] }, ScheduledWorkout[]>(
+        '/schedules/reorder',
+        payload,
+        'patch',
+      ),
     create: (payload: Partial<ScheduledWorkout>) =>
       sendDataStrict<Partial<ScheduledWorkout>, ScheduledWorkout>('/schedules', payload),
     remove: (id: string) => deleteData(`/schedules/${id}`),

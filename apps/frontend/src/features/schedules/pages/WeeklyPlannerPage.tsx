@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addDays, format, startOfWeek } from 'date-fns';
-import { Copy, Plus, Trash2 } from 'lucide-react';
+import { addDays, format, isSameDay, startOfWeek } from 'date-fns';
+import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
@@ -100,6 +100,31 @@ export function WeeklyPlannerPage() {
       notify({ title: 'Workout removed from planner' });
     },
   });
+  const reorderByDate = useMutation({
+    mutationFn: fitnessApi.schedules.reorderByDate,
+    onSuccess: (updatedSchedules) => {
+      queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) => {
+        if (!current) {
+          return current;
+        }
+
+        const updatedById = new Map(updatedSchedules.map((item) => [item.id, item]));
+
+        return current
+          .map((item) => updatedById.get(item.id) ?? item)
+          .sort((a, b) => {
+            const dateDiff =
+              new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+            if (dateDiff !== 0) {
+              return dateDiff;
+            }
+
+            return a.position - b.position;
+          });
+      });
+      notify({ title: 'Workout order updated' });
+    },
+  });
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -141,6 +166,35 @@ export function WeeklyPlannerPage() {
     }
   };
 
+  const handleMoveWithinDay = (day: Date, index: number, direction: -1 | 1) => {
+    const dayItems = schedules
+      .filter((item) => isSameDay(new Date(item.scheduledDate), day))
+      .sort((a, b) => a.position - b.position);
+    const targetIndex = index + direction;
+
+    if (targetIndex < 0 || targetIndex >= dayItems.length || reorderByDate.isPending) {
+      return;
+    }
+
+    const reordered = [...dayItems];
+    const currentItem = reordered[index];
+    const targetItem = reordered[targetIndex];
+
+    if (!currentItem || !targetItem) {
+      return;
+    }
+
+    reordered[index] = targetItem;
+    reordered[targetIndex] = currentItem;
+    // Send date as ISO string at midnight for backend matching
+    const isoDate = new Date(day);
+    isoDate.setHours(0, 0, 0, 0);
+    reorderByDate.mutate({
+      date: isoDate.toISOString(),
+      scheduleIds: reordered.map((item) => item.id),
+    });
+  };
+
   return (
     <>
       <PageHeader
@@ -163,9 +217,9 @@ export function WeeklyPlannerPage() {
       />
       <div className="grid gap-4 xl:grid-cols-7">
         {days.map((day) => {
-          const dayItems = schedules.filter(
-            (item) => new Date(item.scheduledDate).getDay() === day.getDay(),
-          );
+          const dayItems = schedules
+            .filter((item) => isSameDay(new Date(item.scheduledDate), day))
+            .sort((a, b) => a.position - b.position);
 
           return (
             <Panel key={day.toISOString()} className="min-h-72">
@@ -179,7 +233,7 @@ export function WeeklyPlannerPage() {
               </div>
               <div className="space-y-3">
                 {dayItems.length > 0 ? (
-                  dayItems.map((item) => (
+                  dayItems.map((item, index) => (
                     <div
                       key={item.id}
                       className="rounded-md border border-ink/10 bg-cloud p-3 dark:border-white/10 dark:bg-white/10"
@@ -196,6 +250,28 @@ export function WeeklyPlannerPage() {
                           <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
                             {item.status}
                           </Badge>
+                          <div className="flex flex-col w-full justify-end gap-2">
+                            <Button
+                              aria-label="Move workout up"
+                              disabled={index === 0 || reorderByDate.isPending}
+                              icon={<ArrowUp className="h-4 w-4" aria-hidden />}
+                              onClick={() => handleMoveWithinDay(day, index, -1)}
+                              type="button"
+                              variant="ghost"
+                            >
+                              Up
+                            </Button>
+                            <Button
+                              aria-label="Move workout down"
+                              disabled={index === dayItems.length - 1 || reorderByDate.isPending}
+                              icon={<ArrowDown className="h-4 w-4" aria-hidden />}
+                              onClick={() => handleMoveWithinDay(day, index, 1)}
+                              type="button"
+                              variant="ghost"
+                            >
+                              Down
+                            </Button>
+                          </div>
                           <Button
                             icon={<Trash2 className="h-4 w-4" aria-hidden />}
                             onClick={() => handleDeleteSchedule(item)}

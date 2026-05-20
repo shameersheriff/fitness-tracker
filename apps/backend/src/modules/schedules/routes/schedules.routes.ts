@@ -7,6 +7,7 @@ import { schedulesController } from '../controllers/schedules.controller';
 import {
   createScheduledWorkoutSchema,
   reorderDaySchedulesSchema,
+  reorderSchedulesByDateSchema,
   scheduleQuerySchema,
   updateScheduledWorkoutSchema,
 } from '../validators/schedules.validator';
@@ -19,6 +20,11 @@ schedulesRouter.patch(
   '/day/reorder',
   validateRequest({ body: reorderDaySchedulesSchema }),
   schedulesController.reorderDay,
+);
+schedulesRouter.patch(
+  '/reorder',
+  validateRequest({ body: reorderSchedulesByDateSchema }),
+  schedulesController.reorderByDate,
 );
 schedulesRouter.post(
   '/',

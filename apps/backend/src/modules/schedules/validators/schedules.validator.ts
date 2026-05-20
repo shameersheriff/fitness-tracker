@@ -30,3 +30,8 @@ export const scheduleQuerySchema = z.object({
 export const reorderDaySchedulesSchema = z.object({
   scheduleIds: z.array(z.string().min(1)).min(1),
 });
+
+export const reorderSchedulesByDateSchema = z.object({
+  date: z.coerce.date(),
+  scheduleIds: z.array(z.string().min(1)).min(1),
+});

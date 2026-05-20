@@ -3,6 +3,7 @@ import type { z } from 'zod';
 import type {
   createScheduledWorkoutSchema,
   reorderDaySchedulesSchema,
+  reorderSchedulesByDateSchema,
   scheduleQuerySchema,
   updateScheduledWorkoutSchema,
 } from '../validators/schedules.validator';
@@ -11,3 +12,4 @@ export type CreateScheduledWorkoutDto = z.infer<typeof createScheduledWorkoutSch
 export type UpdateScheduledWorkoutDto = z.infer<typeof updateScheduledWorkoutSchema>;
 export type ScheduleQueryDto = z.infer<typeof scheduleQuerySchema>;
 export type ReorderDaySchedulesDto = z.infer<typeof reorderDaySchedulesSchema>;
+export type ReorderSchedulesByDateDto = z.infer<typeof reorderSchedulesByDateSchema>;

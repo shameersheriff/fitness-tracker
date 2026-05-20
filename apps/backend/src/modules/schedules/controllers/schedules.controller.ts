@@ -22,6 +22,10 @@ export const schedulesController = {
     const data = await service.reorderDay(req.body, req.userContext.userId);
     return ok(res, 'Daily workout order updated successfully', data);
   }),
+  reorderByDate: asyncHandler(async (req, res) => {
+    const data = await service.reorderByDate(req.body, req.userContext.userId);
+    return ok(res, 'Workout order updated successfully', data);
+  }),
   create: asyncHandler(async (req, res) => {
     const data = await service.create(req.body, req.userContext.userId);
     return created(res, 'Scheduled workout created successfully', data);
