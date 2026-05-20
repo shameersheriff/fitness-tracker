@@ -27,6 +27,13 @@ export const scheduleQuerySchema = z.object({
   status: scheduleStatusSchema.optional(),
 });
 
+export const dayScheduleQuerySchema = z.object({
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+});
+
 export const reorderDaySchedulesSchema = z.object({
   scheduleIds: z.array(z.string().min(1)).min(1),
 });

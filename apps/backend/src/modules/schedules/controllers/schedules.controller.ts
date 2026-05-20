@@ -6,6 +6,22 @@ import { SchedulesService } from '../services/schedules.service';
 
 const service = new SchedulesService();
 
+function parseDayQueryDate(value: unknown) {
+  if (typeof value !== 'string') {
+    return new Date();
+  }
+
+  const parts = value.split('-');
+  if (parts.length !== 3) {
+    return new Date();
+  }
+
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+  return new Date(year, month - 1, day);
+}
+
 export const schedulesController = {
   list: asyncHandler(async (req, res) => {
     const result = await service.list(
@@ -15,8 +31,7 @@ export const schedulesController = {
     return paginated(res, 'Scheduled workouts fetched successfully', result.data, result.meta);
   }),
   getByDay: asyncHandler(async (req, res) => {
-    const date = req.query.date ? new Date(req.query.date as string) : new Date();
-    const data = await service.getByDay(date, req.userContext.userId);
+    const data = await service.getByDay(parseDayQueryDate(req.query.date), req.userContext.userId);
     return ok(res, 'Daily schedule fetched successfully', data);
   }),
   reorderDay: asyncHandler(async (req, res) => {
