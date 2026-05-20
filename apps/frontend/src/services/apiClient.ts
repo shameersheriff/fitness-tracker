@@ -43,3 +43,12 @@ export async function sendData<TInput, TOutput>(
     return fallback;
   }
 }
+
+export async function deleteData(url: string): Promise<boolean> {
+  try {
+    await apiClient.delete(url);
+    return true;
+  } catch {
+    return true;
+  }
+}

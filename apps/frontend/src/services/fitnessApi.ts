@@ -11,7 +11,7 @@ import type {
   WorkoutType,
 } from '@fitness-tracker/shared-types';
 
-import { getData, sendData } from './apiClient';
+import { deleteData, getData, sendData } from './apiClient';
 import {
   demoDashboard,
   demoMeals,
@@ -53,6 +53,21 @@ export const fitnessApi = {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       } as WorkoutType),
+    update: (id: string, payload: Partial<WorkoutType>) =>
+      sendData(
+        `/workout-types/${id}`,
+        payload,
+        {
+          id,
+          name: payload.name ?? 'Updated Type',
+          description: payload.description ?? null,
+          trackingType: payload.trackingType ?? 'SETS_REPS',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as WorkoutType,
+        'put',
+      ),
+    remove: (id: string) => deleteData(`/workout-types/${id}`),
   },
   schedules: {
     list: () => getData<ScheduledWorkout[]>('/schedules', demoScheduledWorkouts),

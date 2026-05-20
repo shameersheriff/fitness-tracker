@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
@@ -27,12 +27,36 @@ const initialForm: WorkoutTypeForm = {
 };
 
 export function WorkoutTypesPage() {
+  const [editingType, setEditingType] = useState<WorkoutType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
   const queryClient = useQueryClient();
   const { notify } = useToast();
   const workoutTypesQuery = useWorkoutTypes();
   const workoutTypes = workoutTypesQuery.data ?? [];
+
+  const openCreateModal = () => {
+    setEditingType(null);
+    setForm(initialForm);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (workoutType: WorkoutType) => {
+    setEditingType(workoutType);
+    setForm({
+      description: workoutType.description ?? '',
+      name: workoutType.name,
+      trackingType: workoutType.trackingType,
+    });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setEditingType(null);
+    setForm(initialForm);
+    setIsModalOpen(false);
+  };
+
   const createWorkoutType = useMutation({
     mutationFn: fitnessApi.workoutTypes.create,
     onSuccess: (workoutType) => {
@@ -40,19 +64,57 @@ export function WorkoutTypesPage() {
         workoutType,
         ...(current ?? []),
       ]);
-      setForm(initialForm);
-      setIsModalOpen(false);
+      closeModal();
       notify({ title: 'Workout type created' });
     },
   });
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const updateWorkoutType = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<WorkoutType> }) =>
+      fitnessApi.workoutTypes.update(id, payload),
+    onSuccess: (workoutType) => {
+      queryClient.setQueryData<WorkoutType[]>(['workout-types'], (current) =>
+        (current ?? []).map((type) =>
+          type.id === workoutType.id ? { ...type, ...workoutType } : type,
+        ),
+      );
+      closeModal();
+      notify({ title: 'Workout type updated' });
+    },
+  });
+
+  const deleteWorkoutType = useMutation({
+    mutationFn: (id: string) => fitnessApi.workoutTypes.remove(id),
+    onSuccess: (_deleted, id) => {
+      queryClient.setQueryData<WorkoutType[]>(['workout-types'], (current) =>
+        (current ?? []).filter((type) => type.id !== id),
+      );
+      notify({ title: 'Workout type deleted' });
+    },
+  });
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    createWorkoutType.mutate({
+    const payload = {
       name: form.name,
       description: form.description || undefined,
       trackingType: form.trackingType,
-    });
+    };
+
+    if (editingType) {
+      updateWorkoutType.mutate({ id: editingType.id, payload });
+      return;
+    }
+
+    createWorkoutType.mutate(payload);
+  };
+
+  const handleDelete = (workoutType: WorkoutType) => {
+    const confirmed = window.confirm(`Delete ${workoutType.name}? This cannot be undone.`);
+
+    if (confirmed) {
+      deleteWorkoutType.mutate(workoutType.id);
+    }
   };
 
   return (
@@ -62,10 +124,7 @@ export function WorkoutTypesPage() {
         title="Workout Types"
         description="Define how each training category should be tracked and reported."
         action={
-          <Button
-            icon={<Plus className="h-4 w-4" aria-hidden />}
-            onClick={() => setIsModalOpen(true)}
-          >
+          <Button icon={<Plus className="h-4 w-4" aria-hidden />} onClick={openCreateModal}>
             New Type
           </Button>
         }
@@ -82,14 +141,37 @@ export function WorkoutTypesPage() {
               </div>
               <Badge tone="info">{type.trackingType}</Badge>
             </div>
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <Button
+                icon={<Pencil className="h-4 w-4" aria-hidden />}
+                onClick={() => openEditModal(type)}
+                type="button"
+                variant="secondary"
+              >
+                Edit
+              </Button>
+              <Button
+                disabled={deleteWorkoutType.isPending}
+                icon={<Trash2 className="h-4 w-4" aria-hidden />}
+                onClick={() => handleDelete(type)}
+                type="button"
+                variant="danger"
+              >
+                Delete
+              </Button>
+            </div>
           </Panel>
         ))}
       </div>
       <Modal
-        description="Create a reusable category that controls how workouts are tracked."
-        onClose={() => setIsModalOpen(false)}
+        description={
+          editingType
+            ? 'Update this category so workout reporting stays accurate.'
+            : 'Create a reusable category that controls how workouts are tracked.'
+        }
+        onClose={closeModal}
         open={isModalOpen}
-        title="New Workout Type"
+        title={editingType ? 'Edit Workout Type' : 'New Workout Type'}
       >
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <TextField
@@ -117,11 +199,16 @@ export function WorkoutTypesPage() {
             value={form.trackingType}
           />
           <div className="flex justify-end gap-3">
-            <Button onClick={() => setIsModalOpen(false)} type="button" variant="secondary">
+            <Button onClick={closeModal} type="button" variant="secondary">
               Cancel
             </Button>
-            <Button disabled={createWorkoutType.isPending || !form.name.trim()} type="submit">
-              Create Type
+            <Button
+              disabled={
+                createWorkoutType.isPending || updateWorkoutType.isPending || !form.name.trim()
+              }
+              type="submit"
+            >
+              {editingType ? 'Update Type' : 'Create Type'}
             </Button>
           </div>
         </form>
