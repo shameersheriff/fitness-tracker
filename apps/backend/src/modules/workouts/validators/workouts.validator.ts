@@ -32,7 +32,7 @@ export const createWorkoutSchema = z.object({
   imageUrl: z.string().url().optional(),
   muscleGroup: muscleGroupSchema,
   equipmentType: equipmentTypeSchema,
-  workoutTypeId: z.string().optional(),
+  workoutTypeId: z.string().trim().min(1).nullable().optional(),
 });
 
 export const updateWorkoutSchema = createWorkoutSchema.partial();
@@ -43,5 +43,5 @@ export const workoutQuerySchema = z.object({
   search: z.string().trim().optional(),
   muscleGroup: muscleGroupSchema.optional(),
   equipmentType: equipmentTypeSchema.optional(),
-  workoutTypeId: z.string().optional(),
+  workoutTypeId: z.string().trim().min(1).optional(),
 });

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Panel } from '@/components/ui/Panel';
-import { useWorkouts } from '@/hooks/useFitnessData';
+import { useWorkouts, useWorkoutTypes } from '@/hooks/useFitnessData';
 import { fitnessApi } from '@/services/fitnessApi';
 import { equipmentTypes, muscleGroups, type Workout } from '@fitness-tracker/shared-types';
 
@@ -21,6 +21,7 @@ type WorkoutFormState = {
   instructions: string;
   muscleGroup: Workout['muscleGroup'];
   name: string;
+  workoutTypeId: string;
 };
 
 const initialForm: WorkoutFormState = {
@@ -29,6 +30,7 @@ const initialForm: WorkoutFormState = {
   instructions: '',
   muscleGroup: 'CHEST',
   name: '',
+  workoutTypeId: '',
 };
 
 export function WorkoutListPage() {
@@ -39,7 +41,9 @@ export function WorkoutListPage() {
   const queryClient = useQueryClient();
   const { notify } = useToast();
   const workoutsQuery = useWorkouts();
+  const workoutTypesQuery = useWorkoutTypes();
   const workouts = workoutsQuery.data ?? [];
+  const workoutTypes = workoutTypesQuery.data ?? [];
 
   const filteredWorkouts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -75,6 +79,7 @@ export function WorkoutListPage() {
       instructions: workout.instructions ?? '',
       muscleGroup: workout.muscleGroup,
       name: workout.name,
+      workoutTypeId: workout.workoutTypeId ?? '',
     });
     setIsModalOpen(true);
   };
@@ -125,6 +130,7 @@ export function WorkoutListPage() {
       instructions: form.instructions.trim() || undefined,
       muscleGroup: form.muscleGroup,
       name: form.name.trim(),
+      workoutTypeId: form.workoutTypeId || null,
     };
 
     if (editingWorkout) {
@@ -273,6 +279,20 @@ export function WorkoutListPage() {
               value: group,
             }))}
             value={form.muscleGroup}
+          />
+          <SelectField
+            label="Workout type"
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                workoutTypeId: event.target.value,
+              }))
+            }
+            options={[
+              { label: 'Custom', value: '' },
+              ...workoutTypes.map((type) => ({ label: type.name, value: type.id })),
+            ]}
+            value={form.workoutTypeId}
           />
           <SelectField
             label="Equipment"

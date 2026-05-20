@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { Panel } from '@/components/ui/Panel';
+import { useWorkoutTypes } from '@/hooks/useFitnessData';
 import { equipmentTypes, muscleGroups } from '@fitness-tracker/shared-types';
 
 const workoutFormSchema = z.object({
@@ -16,6 +17,7 @@ const workoutFormSchema = z.object({
   description: z.string().optional(),
   muscleGroup: z.enum(muscleGroups),
   equipmentType: z.enum(equipmentTypes),
+  workoutTypeId: z.string(),
   instructions: z.string().optional(),
 });
 
@@ -23,6 +25,8 @@ type WorkoutFormValues = z.infer<typeof workoutFormSchema>;
 
 export function WorkoutFormPage() {
   const { notify } = useToast();
+  const workoutTypesQuery = useWorkoutTypes();
+  const workoutTypes = workoutTypesQuery.data ?? [];
   const {
     control,
     formState: { errors, isSubmitting },
@@ -35,6 +39,7 @@ export function WorkoutFormPage() {
       description: '',
       muscleGroup: 'CHEST',
       equipmentType: 'BARBELL',
+      workoutTypeId: '',
       instructions: '',
     },
   });
@@ -59,7 +64,10 @@ export function WorkoutFormPage() {
             render={({ field }) => (
               <SelectField
                 label="Muscle group"
-                options={muscleGroups.map((group) => ({ label: group.replace('_', ' '), value: group }))}
+                options={muscleGroups.map((group) => ({
+                  label: group.replace('_', ' '),
+                  value: group,
+                }))}
                 {...field}
               />
             )}
@@ -70,7 +78,24 @@ export function WorkoutFormPage() {
             render={({ field }) => (
               <SelectField
                 label="Equipment"
-                options={equipmentTypes.map((type) => ({ label: type.replace('_', ' '), value: type }))}
+                options={equipmentTypes.map((type) => ({
+                  label: type.replace('_', ' '),
+                  value: type,
+                }))}
+                {...field}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="workoutTypeId"
+            render={({ field }) => (
+              <SelectField
+                label="Workout type"
+                options={[
+                  { label: 'Custom', value: '' },
+                  ...workoutTypes.map((type) => ({ label: type.name, value: type.id })),
+                ]}
                 {...field}
               />
             )}
@@ -84,7 +109,11 @@ export function WorkoutFormPage() {
             />
           </label>
           <div className="lg:col-span-2">
-            <Button disabled={isSubmitting} icon={<Save className="h-4 w-4" aria-hidden />} type="submit">
+            <Button
+              disabled={isSubmitting}
+              icon={<Save className="h-4 w-4" aria-hidden />}
+              type="submit"
+            >
               Save Workout
             </Button>
           </div>

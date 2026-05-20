@@ -46,6 +46,16 @@ export class WorkoutsRepository {
     });
   }
 
+  async findWorkoutTypeById(id: string, userId?: string) {
+    return prisma.workoutType.findFirst({
+      where: {
+        id,
+        userId,
+        deletedAt: null,
+      },
+    });
+  }
+
   async create(data: CreateWorkoutDto, userId?: string) {
     return prisma.workout.create({
       data: { ...data, userId },

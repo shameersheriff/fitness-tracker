@@ -8,6 +8,17 @@ import { WorkoutsRepository } from '../repositories/workouts.repository';
 export class WorkoutsService {
   constructor(private readonly repository = new WorkoutsRepository()) {}
 
+  private async validateWorkoutTypeId(workoutTypeId: string | null | undefined, userId?: string) {
+    if (!workoutTypeId) {
+      return;
+    }
+
+    const workoutType = await this.repository.findWorkoutTypeById(workoutTypeId, userId);
+    if (!workoutType) {
+      throw new AppError('Workout type not found', httpStatus.BAD_REQUEST);
+    }
+  }
+
   async list(query: WorkoutQueryDto, userId?: string) {
     const { page, limit, skip } = getPagination(query);
     const filters = {
@@ -34,11 +45,13 @@ export class WorkoutsService {
   }
 
   async create(data: CreateWorkoutDto, userId?: string) {
+    await this.validateWorkoutTypeId(data.workoutTypeId, userId);
     return this.repository.create(data, userId);
   }
 
   async update(id: string, data: UpdateWorkoutDto, userId?: string) {
     await this.getById(id, userId);
+    await this.validateWorkoutTypeId(data.workoutTypeId, userId);
     return this.repository.update(id, data);
   }
 

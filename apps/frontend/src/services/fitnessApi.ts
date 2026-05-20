@@ -121,9 +121,13 @@ export const fitnessApi = {
   workouts: {
     list: () => getData<Workout[]>('/workouts', readStoredWorkouts()),
     create: async (payload: Partial<Workout>) => {
+      const workoutType = payload.workoutTypeId
+        ? (readStoredWorkoutTypes().find((type) => type.id === payload.workoutTypeId) ?? null)
+        : null;
       const workout = await sendData('/workouts', payload, {
         ...demoWorkouts[0],
         ...payload,
+        workoutType,
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -133,12 +137,16 @@ export const fitnessApi = {
       return workout;
     },
     update: async (id: string, payload: Partial<Workout>) => {
+      const workoutType = payload.workoutTypeId
+        ? (readStoredWorkoutTypes().find((type) => type.id === payload.workoutTypeId) ?? null)
+        : null;
       const workout = await sendData(
         `/workouts/${id}`,
         payload,
         {
           ...demoWorkouts[0],
           ...payload,
+          workoutType,
           id,
           updatedAt: new Date().toISOString(),
         } as Workout,
