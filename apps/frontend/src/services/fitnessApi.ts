@@ -39,6 +39,7 @@ export const fitnessApi = {
     today: (date: string) => getDataStrict<ScheduledWorkout[]>(`/schedules/day/${date}`),
     create: (payload: Partial<ScheduledWorkout>) =>
       sendDataStrict<Partial<ScheduledWorkout>, ScheduledWorkout>('/schedules', payload),
+    remove: (id: string) => deleteData(`/schedules/${id}`),
   },
   sessions: {
     list: () => getDataStrict<WorkoutSession[]>('/workout-sessions'),

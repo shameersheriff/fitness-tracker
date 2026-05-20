@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addDays, format, startOfWeek } from 'date-fns';
-import { Copy, Plus } from 'lucide-react';
+import { Copy, Plus, Trash2 } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
@@ -91,6 +91,15 @@ export function WeeklyPlannerPage() {
       notify({ title: 'Workout created' });
     },
   });
+  const deleteSchedule = useMutation({
+    mutationFn: fitnessApi.schedules.remove,
+    onSuccess: (_deleted, id) => {
+      queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) =>
+        (current ?? []).filter((item) => item.id !== id),
+      );
+      notify({ title: 'Workout removed from planner' });
+    },
+  });
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -120,6 +129,16 @@ export function WeeklyPlannerPage() {
       muscleGroup: workoutForm.muscleGroup,
       name: workoutForm.name.trim(),
     });
+  };
+
+  const handleDeleteSchedule = (item: ScheduledWorkout) => {
+    const confirmed = window.confirm(
+      `Remove ${item.workout?.name ?? 'this workout'} from the planner?`,
+    );
+
+    if (confirmed) {
+      deleteSchedule.mutate(item.id);
+    }
   };
 
   return (
@@ -173,9 +192,19 @@ export function WeeklyPlannerPage() {
                         {item.targetReps ? ` x ${item.targetReps}` : ''}
                       </p>
                       <div className="mt-3">
-                        <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
-                          {item.status}
-                        </Badge>
+                        <div className="flex flex-col items-center justify-between gap-2">
+                          <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
+                            {item.status}
+                          </Badge>
+                          <Button
+                            icon={<Trash2 className="h-4 w-4" aria-hidden />}
+                            onClick={() => handleDeleteSchedule(item)}
+                            type="button"
+                            variant="ghost"
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))
