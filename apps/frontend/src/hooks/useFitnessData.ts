@@ -37,6 +37,13 @@ export function useSchedules() {
   });
 }
 
+export function useTodaySchedules() {
+  return useQuery({
+    queryKey: ['schedules', 'today'],
+    queryFn: fitnessApi.schedules.today,
+  });
+}
+
 export function useSessions() {
   return useQuery({
     queryKey: ['workout-sessions'],

@@ -4,10 +4,10 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Panel } from '@/components/ui/Panel';
-import { useSchedules } from '@/hooks/useFitnessData';
+import { useTodaySchedules } from '@/hooks/useFitnessData';
 
 export function DailyWorkoutPage() {
-  const schedulesQuery = useSchedules();
+  const schedulesQuery = useTodaySchedules();
   const schedules = schedulesQuery.data ?? [];
 
   return (
@@ -23,8 +23,12 @@ export function DailyWorkoutPage() {
             <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-xl font-bold text-ink dark:text-white">{item.workout?.name}</h2>
-                  <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>{item.status}</Badge>
+                  <h2 className="text-xl font-bold text-ink dark:text-white">
+                    {item.workout?.name}
+                  </h2>
+                  <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
+                    {item.status}
+                  </Badge>
                 </div>
                 <p className="mt-2 text-sm leading-6 text-ink/60 dark:text-white/60">
                   {item.workout?.instructions}

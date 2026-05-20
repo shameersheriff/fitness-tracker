@@ -8,11 +8,14 @@ const service = new SchedulesService();
 
 export const schedulesController = {
   list: asyncHandler(async (req, res) => {
-    const result = await service.list(req.query as unknown as ScheduleQueryDto, req.userContext.userId);
+    const result = await service.list(
+      req.query as unknown as ScheduleQueryDto,
+      req.userContext.userId,
+    );
     return paginated(res, 'Scheduled workouts fetched successfully', result.data, result.meta);
   }),
   getByDay: asyncHandler(async (req, res) => {
-    const data = await service.getByDay(req.params.date as unknown as Date, req.userContext.userId);
+    const data = await service.getByDay(req.userContext.userId);
     return ok(res, 'Daily schedule fetched successfully', data);
   }),
   create: asyncHandler(async (req, res) => {

@@ -26,7 +26,3 @@ export const scheduleQuerySchema = z.object({
   to: z.coerce.date().optional(),
   status: scheduleStatusSchema.optional(),
 });
-
-export const dateParamSchema = z.object({
-  date: z.coerce.date(),
-});

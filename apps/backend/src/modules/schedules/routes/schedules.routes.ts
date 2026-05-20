@@ -6,7 +6,6 @@ import { idParamSchema } from '@/common/validators/pagination.validator';
 import { schedulesController } from '../controllers/schedules.controller';
 import {
   createScheduledWorkoutSchema,
-  dateParamSchema,
   scheduleQuerySchema,
   updateScheduledWorkoutSchema,
 } from '../validators/schedules.validator';
@@ -14,11 +13,7 @@ import {
 export const schedulesRouter = Router();
 
 schedulesRouter.get('/', validateRequest({ query: scheduleQuerySchema }), schedulesController.list);
-schedulesRouter.get(
-  '/day/:date',
-  validateRequest({ params: dateParamSchema }),
-  schedulesController.getByDay,
-);
+schedulesRouter.get('/day', schedulesController.getByDay);
 schedulesRouter.post(
   '/',
   validateRequest({ body: createScheduledWorkoutSchema }),
@@ -34,4 +29,8 @@ schedulesRouter.patch(
   validateRequest({ params: idParamSchema }),
   schedulesController.complete,
 );
-schedulesRouter.delete('/:id', validateRequest({ params: idParamSchema }), schedulesController.remove);
+schedulesRouter.delete(
+  '/:id',
+  validateRequest({ params: idParamSchema }),
+  schedulesController.remove,
+);

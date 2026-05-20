@@ -36,8 +36,8 @@ export class SchedulesService {
     return schedule;
   }
 
-  async getByDay(date: Date, userId?: string) {
-    return this.repository.findByDay(date, userId);
+  async getByDay(userId?: string) {
+    return this.repository.findByDay(new Date(), userId);
   }
 
   async create(data: CreateScheduledWorkoutDto, userId?: string) {
