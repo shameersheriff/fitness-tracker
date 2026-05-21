@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/common/database/prisma';
 
 import type {
+  AddSessionSetDto,
   CreateWorkoutSessionDto,
   UpdateWorkoutSessionDto,
 } from '../dto/workout-session.dto';
@@ -87,6 +88,32 @@ export class WorkoutSessionsRepository {
     return prisma.workoutSession.update({
       where: { id },
       data: { completedAt: new Date() },
+      include: { workout: true, sets: { orderBy: { setNumber: 'asc' } } },
+    });
+  }
+
+  async addSet(sessionId: string, data: AddSessionSetDto) {
+    const lastSet = await prisma.workoutSessionSet.findFirst({
+      where: { sessionId },
+      orderBy: { setNumber: 'desc' },
+      select: { setNumber: true },
+    });
+    const nextSetNumber = (lastSet?.setNumber ?? 0) + 1;
+    const set = await prisma.workoutSessionSet.create({
+      data: { ...data, sessionId, setNumber: nextSetNumber },
+    });
+    return prisma.workoutSession.findFirst({
+      where: { id: sessionId },
+      include: { workout: true, sets: { orderBy: { setNumber: 'asc' } } },
+    });
+  }
+
+  async deleteSet(sessionId: string, setId: string) {
+    await prisma.workoutSessionSet.deleteMany({
+      where: { id: setId, sessionId },
+    });
+    return prisma.workoutSession.findFirst({
+      where: { id: sessionId },
       include: { workout: true, sets: { orderBy: { setNumber: 'asc' } } },
     });
   }

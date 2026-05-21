@@ -8,7 +8,10 @@ const service = new WorkoutSessionsService();
 
 export const workoutSessionsController = {
   list: asyncHandler(async (req, res) => {
-    const result = await service.list(req.query as unknown as WorkoutSessionQueryDto, req.userContext.userId);
+    const result = await service.list(
+      req.query as unknown as WorkoutSessionQueryDto,
+      req.userContext.userId,
+    );
     return paginated(res, 'Workout sessions fetched successfully', result.data, result.meta);
   }),
   getById: asyncHandler(async (req, res) => {
@@ -26,6 +29,14 @@ export const workoutSessionsController = {
   complete: asyncHandler(async (req, res) => {
     const data = await service.complete(req.params.id, req.userContext.userId);
     return ok(res, 'Workout session completed successfully', data);
+  }),
+  addSet: asyncHandler(async (req, res) => {
+    const data = await service.addSet(req.params.id, req.body, req.userContext.userId);
+    return ok(res, 'Set added successfully', data);
+  }),
+  deleteSet: asyncHandler(async (req, res) => {
+    const data = await service.deleteSet(req.params.id, req.params.setId, req.userContext.userId);
+    return ok(res, 'Set deleted successfully', data);
   }),
   remove: asyncHandler(async (req, res) => {
     await service.remove(req.params.id, req.userContext.userId);

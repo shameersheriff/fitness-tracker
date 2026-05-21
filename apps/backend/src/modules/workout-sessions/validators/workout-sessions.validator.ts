@@ -26,6 +26,15 @@ export const createWorkoutSessionSchema = z.object({
   sets: z.array(sessionSetSchema).default([]),
 });
 
+export const addSessionSetSchema = z.object({
+  reps: z.coerce.number().int().positive().optional(),
+  weight: z.coerce.number().nonnegative().optional(),
+  restTimeSeconds: z.coerce.number().int().nonnegative().optional(),
+  durationSeconds: z.coerce.number().int().positive().optional(),
+  distanceKm: z.coerce.number().positive().optional(),
+  completed: z.boolean().default(false),
+});
+
 export const updateWorkoutSessionSchema = createWorkoutSessionSchema.partial();
 
 export const workoutSessionQuerySchema = z.object({

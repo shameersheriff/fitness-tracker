@@ -39,3 +39,8 @@ export async function deleteData(url: string): Promise<boolean> {
   await apiClient.delete(url);
   return true;
 }
+
+export async function deleteDataStrict<TData>(url: string): Promise<TData> {
+  const response = await apiClient.delete<ApiSuccess<TData>>(url);
+  return response.data.data;
+}

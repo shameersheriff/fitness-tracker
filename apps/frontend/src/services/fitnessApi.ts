@@ -11,7 +11,7 @@ import type {
   WorkoutType,
 } from '@fitness-tracker/shared-types';
 
-import { deleteData, getDataStrict, sendDataStrict } from './apiClient';
+import { deleteData, deleteDataStrict, getDataStrict, sendDataStrict } from './apiClient';
 
 export const fitnessApi = {
   dashboard: {
@@ -62,6 +62,14 @@ export const fitnessApi = {
     list: () => getDataStrict<WorkoutSession[]>('/workout-sessions'),
     create: (payload: Partial<WorkoutSession>) =>
       sendDataStrict<Partial<WorkoutSession>, WorkoutSession>('/workout-sessions', payload),
+    addSet: (id: string, payload: Partial<WorkoutSession['sets'][number]>) =>
+      sendDataStrict<Partial<WorkoutSession['sets'][number]>, WorkoutSession>(
+        `/workout-sessions/${id}/sets`,
+        payload,
+      ),
+    deleteSet: (id: string, setId: string) =>
+      deleteDataStrict<WorkoutSession>(`/workout-sessions/${id}/sets/${setId}`),
+    remove: (id: string) => deleteData(`/workout-sessions/${id}`),
   },
   meals: {
     list: () => getDataStrict<Meal[]>('/meals'),

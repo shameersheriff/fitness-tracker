@@ -3,6 +3,7 @@ import { AppError } from '@/common/errors/AppError';
 import { getPagination, getPaginationMeta } from '@/common/utils/pagination';
 
 import type {
+  AddSessionSetDto,
   CreateWorkoutSessionDto,
   UpdateWorkoutSessionDto,
   WorkoutSessionQueryDto,
@@ -47,6 +48,16 @@ export class WorkoutSessionsService {
   async complete(id: string, userId?: string) {
     await this.getById(id, userId);
     return this.repository.complete(id);
+  }
+
+  async addSet(id: string, data: AddSessionSetDto, userId?: string) {
+    await this.getById(id, userId);
+    return this.repository.addSet(id, data);
+  }
+
+  async deleteSet(id: string, setId: string, userId?: string) {
+    await this.getById(id, userId);
+    return this.repository.deleteSet(id, setId);
   }
 
   async remove(id: string, userId?: string) {
