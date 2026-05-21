@@ -30,7 +30,7 @@ docs/             Architecture and API notes
 
 ```bash
 pnpm install
-cp .env.example .env
+cp apps/backend/.env.example apps/backend/.env
 pnpm db:generate
 pnpm db:migrate
 pnpm db:seed
