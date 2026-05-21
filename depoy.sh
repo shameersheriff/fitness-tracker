@@ -1,10 +1,27 @@
 echo "Starting deployment..."
 echo ""
+echo "Stopping frontend service..."
+echo ""
+pm2 stop ft:fe
 cd /projects/fitness-tracker/apps/frontend
-npm run build
-sudo rm -rf /var/www/fitness-tracker/*
-sudo cp -r dist/* /var/www/fitness-tracker/
-sudo chown -R www-data:www-data /var/www/fitness-tracker
+echo "Clearing old build files and building new ones..."
+echo ""
+sudo rm -rf dist/*
+pnpm build
+pm2 start ft:fe
+echo ""
+echo "Frontend Deployment complete!"
+
+echo "Stopping backend service..."
+echo ""
+pm2 stop ft:be
+cd /projects/fitness-tracker/apps/backend
+echo "Clearing old build files and building new ones..."
+echo ""
+sudo rm -rf dist/*
+pnpm build
+pm2 start ft:be
+
 sudo systemctl reload nginx
 echo ""
-echo "UI Deployment complete!"
+echo "Backend Deployment complete!"
