@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
@@ -43,6 +43,7 @@ function toDateInputValue(date: Date): string {
 
 export function MealTrackerPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMealId, setEditingMealId] = useState<string | null>(null);
   const [form, setForm] = useState(initialForm);
   const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()));
   const [quantities, setQuantities] = useState<Record<string, string>>({});
@@ -71,6 +72,20 @@ export function MealTrackerPage() {
       setForm(initialForm);
       setIsModalOpen(false);
       notify({ title: 'Meal template created' });
+    },
+  });
+
+  const updateMeal = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<Meal> }) =>
+      fitnessApi.meals.update(id, payload),
+    onSuccess: (updatedMeal) => {
+      queryClient.setQueryData<Meal[]>(['meals'], (current) =>
+        (current ?? []).map((meal) => (meal.id === updatedMeal.id ? updatedMeal : meal)),
+      );
+      setForm(initialForm);
+      setEditingMealId(null);
+      setIsModalOpen(false);
+      notify({ title: 'Meal template updated' });
     },
   });
 
@@ -107,7 +122,7 @@ export function MealTrackerPage() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    createMeal.mutate({
+    const payload = {
       title: form.title,
       description: form.description || undefined,
       mealType: form.mealType,
@@ -115,9 +130,44 @@ export function MealTrackerPage() {
       carbs: form.carbs ? Number(form.carbs) : 0,
       fats: form.fats ? Number(form.fats) : 0,
       calories: form.calories ? Number(form.calories) : 0,
+    };
+
+    if (editingMealId) {
+      updateMeal.mutate({ id: editingMealId, payload });
+      return;
+    }
+
+    createMeal.mutate({
+      ...payload,
       mealDate: new Date().toISOString(),
       favorite: false,
     });
+  };
+
+  const handleOpenCreateModal = () => {
+    setEditingMealId(null);
+    setForm(initialForm);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (meal: Meal) => {
+    setEditingMealId(meal.id);
+    setForm({
+      calories: meal.calories.toString(),
+      carbs: meal.carbs.toString(),
+      description: meal.description ?? '',
+      fats: meal.fats.toString(),
+      mealType: meal.mealType,
+      protein: meal.protein.toString(),
+      title: meal.title,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingMealId(null);
+    setForm(initialForm);
   };
 
   const handleLogMeal = (mealId: string) => {
@@ -159,10 +209,7 @@ export function MealTrackerPage() {
         title="Meal Tracker"
         description="Predefine meals once, then log what you ate each day to track calorie intake."
         action={
-          <Button
-            icon={<Plus className="h-4 w-4" aria-hidden />}
-            onClick={() => setIsModalOpen(true)}
-          >
+          <Button icon={<Plus className="h-4 w-4" aria-hidden />} onClick={handleOpenCreateModal}>
             Add Template
           </Button>
         }
@@ -299,6 +346,15 @@ export function MealTrackerPage() {
                 </div>
                 <div className="flex items-end">
                   <Button
+                    disabled={createMeal.isPending || updateMeal.isPending || deleteMeal.isPending}
+                    icon={<Pencil aria-hidden className="h-4 w-4" />}
+                    onClick={() => handleOpenEditModal(meal)}
+                    type="button"
+                    variant="secondary"
+                  ></Button>
+                </div>
+                <div className="flex items-end">
+                  <Button
                     disabled={deleteMeal.isPending}
                     icon={<Trash2 aria-hidden className="h-4 w-4" />}
                     onClick={() => handleDeleteMeal(meal.id, meal.title)}
@@ -312,10 +368,14 @@ export function MealTrackerPage() {
         </div>
       </div>
       <Modal
-        description="Create a reusable meal template with calories and macros."
-        onClose={() => setIsModalOpen(false)}
+        description={
+          editingMealId
+            ? 'Update this template to quickly log revised nutrition details.'
+            : 'Create a reusable meal template with calories and macros.'
+        }
+        onClose={handleCloseModal}
         open={isModalOpen}
-        title="Add Meal Template"
+        title={editingMealId ? 'Edit Meal Template' : 'Add Meal Template'}
       >
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <TextField
@@ -379,11 +439,14 @@ export function MealTrackerPage() {
             />
           </div>
           <div className="flex justify-end gap-3">
-            <Button onClick={() => setIsModalOpen(false)} type="button" variant="secondary">
+            <Button onClick={handleCloseModal} type="button" variant="secondary">
               Cancel
             </Button>
-            <Button disabled={createMeal.isPending || !form.title.trim()} type="submit">
-              Save Template
+            <Button
+              disabled={createMeal.isPending || updateMeal.isPending || !form.title.trim()}
+              type="submit"
+            >
+              {editingMealId ? 'Save Changes' : 'Save Template'}
             </Button>
           </div>
         </form>
