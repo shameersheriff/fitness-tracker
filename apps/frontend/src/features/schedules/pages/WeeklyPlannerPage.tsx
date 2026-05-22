@@ -179,6 +179,11 @@ export function WeeklyPlannerPage() {
     }
   };
 
+  const handleOpenAddForDay = (day: Date) => {
+    setForm((current) => ({ ...current, scheduledDate: format(day, 'yyyy-MM-dd') }));
+    setIsModalOpen(true);
+  };
+
   const handleMoveWithinDay = (day: Date, index: number, direction: -1 | 1) => {
     const dayItems = schedules
       .filter((item) => isSameDay(new Date(item.scheduledDate), day))
@@ -244,7 +249,10 @@ export function WeeklyPlannerPage() {
               </Button>
               <Button
                 icon={<Plus className="h-4 w-4" aria-hidden />}
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  setForm((current) => ({ ...current, scheduledDate: todayInputValue }));
+                  setIsModalOpen(true);
+                }}
               >
                 Add Workout
               </Button>
@@ -327,6 +335,17 @@ export function WeeklyPlannerPage() {
                     Rest day
                   </p>
                 )}
+              </div>
+              <div className="mt-4">
+                <Button
+                  className="w-full"
+                  icon={<Plus className="h-3.5 w-3.5" aria-hidden />}
+                  onClick={() => handleOpenAddForDay(day)}
+                  type="button"
+                  variant="secondary"
+                >
+                  Add Workout
+                </Button>
               </div>
             </Panel>
           );
