@@ -1,13 +1,22 @@
 import { prisma } from '@/common/database/prisma';
 
+function toDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export class DashboardRepository {
   async getTodayData(userId?: string, date = new Date()) {
     const start = new Date(date);
     start.setHours(0, 0, 0, 0);
     const end = new Date(start);
     end.setDate(start.getDate() + 1);
+    const startKey = toDateKey(start);
+    const endKey = toDateKey(end);
 
-    const [workouts, meals, nutritionGoal, latestProgress] = await Promise.all([
+    const [workouts, mealEntries, nutritionGoal, latestProgress] = await Promise.all([
       prisma.scheduledWorkout.findMany({
         where: {
           userId,
@@ -17,11 +26,14 @@ export class DashboardRepository {
         include: { workout: { include: { workoutType: true } } },
         orderBy: { position: 'asc' },
       }),
-      prisma.meal.findMany({
+      prisma.mealEntry.findMany({
         where: {
           userId,
           deletedAt: null,
-          mealDate: { gte: start, lt: end },
+          mealDate: { gte: startKey, lt: endKey },
+        },
+        include: {
+          meal: true,
         },
         orderBy: { mealDate: 'asc' },
       }),
@@ -39,7 +51,7 @@ export class DashboardRepository {
       }),
     ]);
 
-    return { workouts, meals, nutritionGoal, latestProgress };
+    return { workouts, mealEntries, nutritionGoal, latestProgress };
   }
 
   async getWeeklyData(userId?: string, date = new Date()) {
@@ -48,8 +60,10 @@ export class DashboardRepository {
     start.setHours(0, 0, 0, 0);
     const end = new Date(start);
     end.setDate(start.getDate() + 7);
+    const startKey = toDateKey(start);
+    const endKey = toDateKey(end);
 
-    const [workouts, meals, sessions] = await Promise.all([
+    const [workouts, mealEntries, sessions] = await Promise.all([
       prisma.scheduledWorkout.findMany({
         where: {
           userId,
@@ -57,11 +71,14 @@ export class DashboardRepository {
           scheduledDate: { gte: start, lt: end },
         },
       }),
-      prisma.meal.findMany({
+      prisma.mealEntry.findMany({
         where: {
           userId,
           deletedAt: null,
-          mealDate: { gte: start, lt: end },
+          mealDate: { gte: startKey, lt: endKey },
+        },
+        include: {
+          meal: true,
         },
       }),
       prisma.workoutSession.findMany({
@@ -74,6 +91,6 @@ export class DashboardRepository {
       }),
     ]);
 
-    return { start, end, workouts, meals, sessions };
+    return { start, end, workouts, mealEntries, sessions };
   }
 }

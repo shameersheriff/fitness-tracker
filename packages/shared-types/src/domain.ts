@@ -118,6 +118,31 @@ export interface Meal {
   updatedAt: string;
 }
 
+export interface MealEntry {
+  id: string;
+  mealId?: string | null;
+  mealDate: string;
+  quantity: number;
+  notes?: string | null;
+  meal?: Meal | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DailyMealLog {
+  date: string;
+  entries: MealEntry[];
+  totals: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fats: number;
+    fiber: number;
+    sugar: number;
+    sodium: number;
+  };
+}
+
 export interface NutritionGoal {
   id: string;
   dailyCalories: number;

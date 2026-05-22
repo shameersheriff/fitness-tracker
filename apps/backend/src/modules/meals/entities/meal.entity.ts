@@ -9,5 +9,5 @@ export interface MealEntity {
   carbs: number;
   fats: number;
   calories: number;
-  mealDate: Date;
+  mealDate: string;
 }

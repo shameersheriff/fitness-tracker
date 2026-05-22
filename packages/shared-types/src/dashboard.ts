@@ -1,4 +1,4 @@
-import type { BodyProgressEntry, Meal, NutritionGoal, ScheduledWorkout } from './domain';
+import type { BodyProgressEntry, MealEntry, NutritionGoal, ScheduledWorkout } from './domain';
 
 export interface MacroTotals {
   calories: number;
@@ -15,7 +15,7 @@ export interface DashboardToday {
   workouts: ScheduledWorkout[];
   completedWorkouts: number;
   remainingWorkouts: number;
-  meals: Meal[];
+  meals: MealEntry[];
   macros: MacroTotals;
   nutritionGoal?: NutritionGoal | null;
   latestProgress?: BodyProgressEntry | null;

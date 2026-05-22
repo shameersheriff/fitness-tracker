@@ -333,7 +333,7 @@ model MealEntry {
   id        String   @id @default(cuid())
   userId    String?
   mealId    String?
-  mealDate  DateTime
+  mealDate  String
   quantity  Float    @default(1)
   notes     String?
   createdAt DateTime @default(now())

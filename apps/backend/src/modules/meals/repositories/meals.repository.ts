@@ -2,8 +2,8 @@ import type { Prisma } from '@prisma/client';
 
 import { prisma } from '@/common/database/prisma';
 
-import type { CreateMealDto, UpdateMealDto } from '../dto/meal.dto';
-import type { MealFilters } from '../types/meal.types';
+import type { CreateMealDto, CreateMealEntryDto, UpdateMealDto } from '../dto/meal.dto';
+import type { MealEntryFilters, MealFilters } from '../types/meal.types';
 
 export class MealsRepository {
   private buildWhere(filters: MealFilters): Prisma.MealWhereInput {
@@ -57,5 +57,38 @@ export class MealsRepository {
 
   async softDelete(id: string) {
     return prisma.meal.update({ where: { id }, data: { deletedAt: new Date() } });
+  }
+
+  async findEntries(filters: MealEntryFilters) {
+    return prisma.mealEntry.findMany({
+      where: {
+        deletedAt: null,
+        userId: filters.userId,
+        mealDate: {
+          gte: filters.from,
+          lt: filters.to,
+        },
+      },
+      include: {
+        meal: true,
+      },
+      orderBy: [{ mealDate: 'asc' }, { createdAt: 'asc' }],
+    });
+  }
+
+  async createEntry(data: CreateMealEntryDto, userId?: string) {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    return prisma.mealEntry.create({
+      data: {
+        mealId: data.mealId,
+        mealDate: data.mealDate ?? todayKey,
+        quantity: data.quantity,
+        notes: data.notes,
+        userId,
+      },
+      include: {
+        meal: true,
+      },
+    });
   }
 }

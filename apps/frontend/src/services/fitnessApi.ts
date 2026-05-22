@@ -1,8 +1,10 @@
 import type {
   AnalyticsPoint,
   BodyProgressEntry,
+  DailyMealLog,
   DashboardToday,
   Meal,
+  MealEntry,
   NutritionGoal,
   ScheduledWorkout,
   WeeklySummary,
@@ -74,6 +76,15 @@ export const fitnessApi = {
   meals: {
     list: () => getDataStrict<Meal[]>('/meals'),
     create: (payload: Partial<Meal>) => sendDataStrict<Partial<Meal>, Meal>('/meals', payload),
+    dayLog: (date?: string) =>
+      getDataStrict<DailyMealLog>(
+        date ? `/meals/day?date=${encodeURIComponent(date)}` : '/meals/day',
+      ),
+    logEntry: (payload: { mealId: string; mealDate?: string; quantity?: number; notes?: string }) =>
+      sendDataStrict<
+        { mealId: string; mealDate?: string; quantity?: number; notes?: string },
+        MealEntry
+      >('/meals/entries', payload),
   },
   goals: {
     list: () => getDataStrict<NutritionGoal[]>('/goals'),

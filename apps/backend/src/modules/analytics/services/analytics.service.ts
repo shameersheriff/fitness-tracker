@@ -16,10 +16,12 @@ export class AnalyticsService {
   }
 
   async nutrition(userId?: string) {
-    const meals = await this.repository.nutrition(userId);
-    const totals = meals.reduce<Record<string, number>>((acc, meal) => {
-      const label = format(meal.mealDate, 'EEE');
-      acc[label] = (acc[label] ?? 0) + meal.calories;
+    const entries = await this.repository.nutrition(userId);
+    const totals = entries.reduce<Record<string, number>>((acc, entry) => {
+      const label = format(new Date(`${entry.mealDate}T00:00:00`), 'EEE');
+      const calories =
+        entry.meal && !entry.meal.deletedAt ? entry.meal.calories * entry.quantity : 0;
+      acc[label] = (acc[label] ?? 0) + calories;
       return acc;
     }, {});
 

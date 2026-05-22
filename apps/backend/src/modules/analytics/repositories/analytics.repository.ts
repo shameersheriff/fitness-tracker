@@ -1,5 +1,12 @@
 import { prisma } from '@/common/database/prisma';
 
+function toDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export class AnalyticsRepository {
   async workouts(userId?: string) {
     return prisma.workout.findMany({
@@ -12,9 +19,13 @@ export class AnalyticsRepository {
     const start = new Date();
     start.setDate(start.getDate() - 6);
     start.setHours(0, 0, 0, 0);
+    const startKey = toDateKey(start);
 
-    return prisma.meal.findMany({
-      where: { userId, deletedAt: null, mealDate: { gte: start } },
+    return prisma.mealEntry.findMany({
+      where: { userId, deletedAt: null, mealDate: { gte: startKey } },
+      include: {
+        meal: true,
+      },
       orderBy: { mealDate: 'asc' },
     });
   }
