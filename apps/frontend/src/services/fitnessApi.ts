@@ -76,6 +76,8 @@ export const fitnessApi = {
   meals: {
     list: () => getDataStrict<Meal[]>('/meals'),
     create: (payload: Partial<Meal>) => sendDataStrict<Partial<Meal>, Meal>('/meals', payload),
+    remove: (id: string) => deleteData(`/meals/${id}`),
+    removeEntry: (id: string) => deleteData(`/meals/entries/${id}`),
     dayLog: (date?: string) =>
       getDataStrict<DailyMealLog>(
         date ? `/meals/day?date=${encodeURIComponent(date)}` : '/meals/day',

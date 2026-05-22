@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';
@@ -82,6 +82,29 @@ export function MealTrackerPage() {
     },
   });
 
+  const deleteEntry = useMutation({
+    mutationFn: fitnessApi.meals.removeEntry,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['meals', 'day', selectedDate] });
+      notify({ title: 'Logged meal removed' });
+    },
+  });
+
+  const deleteMeal = useMutation({
+    mutationFn: fitnessApi.meals.remove,
+    onSuccess: (_, mealId) => {
+      queryClient.setQueryData<Meal[]>(['meals'], (current) =>
+        (current ?? []).filter((meal) => meal.id !== mealId),
+      );
+      setQuantities((current) => {
+        const { [mealId]: _deletedQuantity, ...rest } = current;
+        return rest;
+      });
+      void queryClient.invalidateQueries({ queryKey: ['meals', 'day', selectedDate] });
+      notify({ title: 'Meal template deleted' });
+    },
+  });
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     createMeal.mutate({
@@ -109,6 +132,24 @@ export function MealTrackerPage() {
       quantity,
       mealDate: selectedDate,
     });
+  };
+
+  const handleDeleteMeal = (mealId: string, title: string) => {
+    const shouldDelete = window.confirm(`Delete template "${title}"?`);
+    if (!shouldDelete) {
+      return;
+    }
+
+    deleteMeal.mutate(mealId);
+  };
+
+  const handleDeleteEntry = (entryId: string, mealTitle?: string | null) => {
+    const shouldDelete = window.confirm(`Delete logged meal${mealTitle ? ` "${mealTitle}"` : ''}?`);
+    if (!shouldDelete) {
+      return;
+    }
+
+    deleteEntry.mutate(entryId);
   };
 
   return (
@@ -175,9 +216,19 @@ export function MealTrackerPage() {
                     Quantity: {entry.quantity}
                   </p>
                 </div>
-                <Badge tone="info">
-                  {entry.meal ? Math.round(entry.meal.calories * entry.quantity) : 0} kcal
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge tone="info">
+                    {entry.meal ? Math.round(entry.meal.calories * entry.quantity) : 0} kcal
+                  </Badge>
+                  <Button
+                    aria-label={`Delete logged meal ${entry.meal?.title ?? ''}`.trim()}
+                    disabled={deleteEntry.isPending}
+                    icon={<Trash2 aria-hidden className="h-4 w-4" />}
+                    onClick={() => handleDeleteEntry(entry.id, entry.meal?.title)}
+                    type="button"
+                    variant="ghost"
+                  />
+                </div>
               </div>
             ))}
             {!dayLogQuery.isLoading && (dayLogQuery.data?.entries?.length ?? 0) === 0 ? (
@@ -245,6 +296,15 @@ export function MealTrackerPage() {
                   >
                     Log to Day
                   </Button>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    disabled={deleteMeal.isPending}
+                    icon={<Trash2 aria-hidden className="h-4 w-4" />}
+                    onClick={() => handleDeleteMeal(meal.id, meal.title)}
+                    type="button"
+                    variant="danger"
+                  ></Button>
                 </div>
               </div>
             </Panel>

@@ -38,4 +38,8 @@ export const mealsController = {
     const data = await service.createEntry(req.body, req.userContext.userId);
     return created(res, 'Meal logged successfully', data);
   }),
+  removeEntry: asyncHandler(async (req, res) => {
+    await service.removeEntry(req.params.id, req.userContext.userId);
+    return noContent(res);
+  }),
 };

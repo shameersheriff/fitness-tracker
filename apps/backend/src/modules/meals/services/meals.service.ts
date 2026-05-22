@@ -103,4 +103,13 @@ export class MealsService {
     await this.getById(data.mealId, userId);
     return this.repository.createEntry(data, userId);
   }
+
+  async removeEntry(id: string, userId?: string) {
+    const entry = await this.repository.findEntryById(id, userId);
+    if (!entry) {
+      throw new AppError('Meal log entry not found', httpStatus.NOT_FOUND);
+    }
+
+    return this.repository.softDeleteEntry(id);
+  }
 }

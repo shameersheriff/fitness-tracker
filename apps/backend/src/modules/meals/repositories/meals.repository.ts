@@ -91,4 +91,12 @@ export class MealsRepository {
       },
     });
   }
+
+  async findEntryById(id: string, userId?: string) {
+    return prisma.mealEntry.findFirst({ where: { id, userId, deletedAt: null } });
+  }
+
+  async softDeleteEntry(id: string) {
+    return prisma.mealEntry.update({ where: { id }, data: { deletedAt: new Date() } });
+  }
 }

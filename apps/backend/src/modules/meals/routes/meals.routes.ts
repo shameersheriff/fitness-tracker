@@ -22,6 +22,11 @@ mealsRouter.post(
   validateRequest({ body: createMealEntrySchema }),
   mealsController.createEntry,
 );
+mealsRouter.delete(
+  '/entries/:id',
+  validateRequest({ params: idParamSchema }),
+  mealsController.removeEntry,
+);
 mealsRouter.get('/:id', validateRequest({ params: idParamSchema }), mealsController.getById);
 mealsRouter.put(
   '/:id',
