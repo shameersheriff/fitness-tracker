@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addDays, addWeeks, format, isSameDay, startOfWeek } from 'date-fns';
+import { addDays, addWeeks, endOfDay, format, isSameDay, startOfWeek } from 'date-fns';
 import {
   ArrowDown,
   ArrowUp,
@@ -74,21 +74,27 @@ export function WeeklyPlannerPage() {
   const [workoutForm, setWorkoutForm] = useState(initialWorkoutForm);
   const queryClient = useQueryClient();
   const { notify } = useToast();
-  const schedulesQuery = useSchedules();
-  const workoutsQuery = useWorkouts();
-  const schedules = schedulesQuery.data ?? [];
-  const workouts = workoutsQuery.data ?? [];
   const weekStart = startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
   const weekEnd = days[6]!;
+  const schedulesQuery = useSchedules({
+    from: weekStart.toISOString(),
+    to: endOfDay(weekEnd).toISOString(),
+  });
+  const workoutsQuery = useWorkouts();
+  const schedules = schedulesQuery.data ?? [];
+  const workouts = workoutsQuery.data ?? [];
   const weekLabel = `${format(weekStart, 'MMM d')} – ${format(weekEnd, 'MMM d, yyyy')}`;
   const createSchedule = useMutation({
     mutationFn: fitnessApi.schedules.create,
     onSuccess: (scheduledWorkout) => {
-      queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) => [
-        ...(current ?? []),
-        scheduledWorkout,
-      ]);
+      queryClient.setQueriesData<ScheduledWorkout[]>({ queryKey: ['schedules'] }, (current) => {
+        if (!current) {
+          return current;
+        }
+
+        return [...current, scheduledWorkout];
+      });
       setForm(initialForm);
       setIsModalOpen(false);
       notify({ title: 'Workout scheduled' });
@@ -107,7 +113,7 @@ export function WeeklyPlannerPage() {
   const deleteSchedule = useMutation({
     mutationFn: fitnessApi.schedules.remove,
     onSuccess: (_deleted, id) => {
-      queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) =>
+      queryClient.setQueriesData<ScheduledWorkout[]>({ queryKey: ['schedules'] }, (current) =>
         (current ?? []).filter((item) => item.id !== id),
       );
       notify({ title: 'Workout removed from planner' });
@@ -116,7 +122,7 @@ export function WeeklyPlannerPage() {
   const reorderByDate = useMutation({
     mutationFn: fitnessApi.schedules.reorderByDate,
     onSuccess: (updatedSchedules) => {
-      queryClient.setQueryData<ScheduledWorkout[]>(['schedules'], (current) => {
+      queryClient.setQueriesData<ScheduledWorkout[]>({ queryKey: ['schedules'] }, (current) => {
         if (!current) {
           return current;
         }
@@ -221,7 +227,7 @@ export function WeeklyPlannerPage() {
         description="Arrange workouts across the week with room for templates, recurrence, and rest days."
         action={
           <div className="flex flex-col w-full mt-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2">
               <Button
                 aria-label="Previous week"
                 icon={<ChevronLeft className="h-4 w-4" aria-hidden />}
@@ -233,24 +239,36 @@ export function WeeklyPlannerPage() {
               </span>
               <Button
                 aria-label="Next week"
-                disabled={weekOffset >= 0}
                 icon={<ChevronRight className="h-4 w-4" aria-hidden />}
                 onClick={() => setWeekOffset((n) => n + 1)}
                 variant="ghost"
               />
             </div>
             <div className="flex flex-row justify-between w-full mt-2">
-              <Button
-                icon={isEditMode ? undefined : <Pencil className="h-4 w-4" aria-hidden />}
-                variant={isEditMode ? 'primary' : 'secondary'}
-                onClick={() => setIsEditMode((v) => !v)}
-              >
-                {isEditMode ? 'Done' : 'Edit'}
-              </Button>
+              <div className="flex items-center gap-2">
+                {weekOffset !== 0 ? (
+                  <Button onClick={() => setWeekOffset(0)} variant="secondary">
+                    Current week
+                  </Button>
+                ) : null}
+                <Button
+                  className="mr-2"
+                  icon={isEditMode ? undefined : <Pencil className="h-4 w-4" aria-hidden />}
+                  variant={isEditMode ? 'primary' : 'secondary'}
+                  onClick={() => setIsEditMode((v) => !v)}
+                >
+                  {isEditMode ? 'Done' : 'Edit'}
+                </Button>
+              </div>
               <Button
                 icon={<Plus className="h-4 w-4" aria-hidden />}
                 onClick={() => {
-                  setForm((current) => ({ ...current, scheduledDate: todayInputValue }));
+                  const defaultDate =
+                    isSameDay(weekStart, startOfWeek(new Date(), { weekStartsOn: 1 })) ||
+                    weekOffset < 0
+                      ? todayInputValue
+                      : format(weekStart, 'yyyy-MM-dd');
+                  setForm((current) => ({ ...current, scheduledDate: defaultDate }));
                   setIsModalOpen(true);
                 }}
               >

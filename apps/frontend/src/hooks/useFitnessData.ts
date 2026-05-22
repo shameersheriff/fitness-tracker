@@ -30,10 +30,10 @@ export function useWorkoutTypes() {
   });
 }
 
-export function useSchedules() {
+export function useSchedules(filters?: { from?: string; to?: string }) {
   return useQuery({
-    queryKey: ['schedules'],
-    queryFn: fitnessApi.schedules.list,
+    queryKey: ['schedules', filters?.from ?? null, filters?.to ?? null],
+    queryFn: () => fitnessApi.schedules.list(filters),
   });
 }
 

@@ -37,7 +37,30 @@ export const fitnessApi = {
     remove: (id: string) => deleteData(`/workout-types/${id}`),
   },
   schedules: {
-    list: () => getDataStrict<ScheduledWorkout[]>('/schedules'),
+    list: (filters?: { from?: string; to?: string; page?: number; limit?: number }) => {
+      const params = new URLSearchParams();
+
+      if (filters?.from) {
+        params.set('from', filters.from);
+      }
+
+      if (filters?.to) {
+        params.set('to', filters.to);
+      }
+
+      if (typeof filters?.page === 'number') {
+        params.set('page', String(filters.page));
+      }
+
+      if (typeof filters?.limit === 'number') {
+        params.set('limit', String(filters.limit));
+      }
+
+      const query = params.toString();
+      const url = query ? `/schedules?${query}` : '/schedules';
+
+      return getDataStrict<ScheduledWorkout[]>(url);
+    },
     today: (date?: string) =>
       getDataStrict<ScheduledWorkout[]>(
         date ? `/schedules/day?date=${encodeURIComponent(date)}` : '/schedules/day',
