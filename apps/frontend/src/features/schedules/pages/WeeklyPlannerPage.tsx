@@ -283,39 +283,42 @@ export function WeeklyPlannerPage() {
                         {item.targetReps ? ` x ${item.targetReps}` : ''}
                       </p>
                       <div className="mt-3 flex items-center justify-between gap-1">
-                        <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
-                          {item.status}
-                        </Badge>
-                        {isEditMode && (
-                          <div className="flex items-center gap-0.5">
-                            <Button
-                              aria-label="Move workout up"
-                              className="h-7 w-7 min-h-7 p-0"
-                              disabled={index === 0 || reorderByDate.isPending}
-                              icon={<ArrowUp className="h-3.5 w-3.5" aria-hidden />}
-                              onClick={() => handleMoveWithinDay(day, index, -1)}
-                              type="button"
-                              variant="ghost"
-                            />
-                            <Button
-                              aria-label="Move workout down"
-                              className="h-7 w-7 min-h-7 p-0"
-                              disabled={index === dayItems.length - 1 || reorderByDate.isPending}
-                              icon={<ArrowDown className="h-3.5 w-3.5" aria-hidden />}
-                              onClick={() => handleMoveWithinDay(day, index, 1)}
-                              type="button"
-                              variant="ghost"
-                            />
-                            <Button
-                              aria-label="Delete workout"
-                              className="h-7 w-7 min-h-7 p-0"
-                              icon={<Trash2 className="h-3.5 w-3.5" aria-hidden />}
-                              onClick={() => handleDeleteSchedule(item)}
-                              type="button"
-                              variant="ghost"
-                            />
-                          </div>
-                        )}
+                        <div className="flex flex-col gap-2">
+                          <Badge tone={item.status === 'COMPLETED' ? 'success' : 'neutral'}>
+                            {item.status}
+                          </Badge>
+
+                          {isEditMode && (
+                            <div className="flex items-center gap-0.5">
+                              <Button
+                                aria-label="Move workout up"
+                                className="h-7 w-7 min-h-7 p-0"
+                                disabled={index === 0 || reorderByDate.isPending}
+                                icon={<ArrowUp className="h-3.5 w-3.5" aria-hidden />}
+                                onClick={() => handleMoveWithinDay(day, index, -1)}
+                                type="button"
+                                variant="ghost"
+                              />
+                              <Button
+                                aria-label="Move workout down"
+                                className="h-7 w-7 min-h-7 p-0"
+                                disabled={index === dayItems.length - 1 || reorderByDate.isPending}
+                                icon={<ArrowDown className="h-3.5 w-3.5" aria-hidden />}
+                                onClick={() => handleMoveWithinDay(day, index, 1)}
+                                type="button"
+                                variant="ghost"
+                              />
+                              <Button
+                                aria-label="Delete workout"
+                                className="h-7 w-7 min-h-7 p-0"
+                                icon={<Trash2 className="h-3.5 w-3.5" aria-hidden />}
+                                onClick={() => handleDeleteSchedule(item)}
+                                type="button"
+                                variant="ghost"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))
