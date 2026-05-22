@@ -56,6 +56,12 @@ export const fitnessApi = {
         payload,
         'patch',
       ),
+    update: (id: string, payload: Partial<ScheduledWorkout>) =>
+      sendDataStrict<Partial<ScheduledWorkout>, ScheduledWorkout>(
+        `/schedules/${id}`,
+        payload,
+        'put',
+      ),
     create: (payload: Partial<ScheduledWorkout>) =>
       sendDataStrict<Partial<ScheduledWorkout>, ScheduledWorkout>('/schedules', payload),
     remove: (id: string) => deleteData(`/schedules/${id}`),

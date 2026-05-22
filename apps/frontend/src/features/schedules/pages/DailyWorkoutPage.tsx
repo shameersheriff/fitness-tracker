@@ -60,9 +60,10 @@ export function DailyWorkoutPage() {
       notify({ title: 'Workout order updated' });
     },
   });
-  const completeSchedule = useMutation({
-    mutationFn: fitnessApi.schedules.complete,
-    onSuccess: (updatedSchedule) => {
+  const updateScheduleStatus = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: ScheduledWorkout['status'] }) =>
+      fitnessApi.schedules.update(id, { status }),
+    onSuccess: (updatedSchedule, variables) => {
       queryClient.setQueryData<ScheduledWorkout[]>(['schedules', 'day', dateStr], (current) =>
         (current ?? []).map((item) => (item.id === updatedSchedule.id ? updatedSchedule : item)),
       );
@@ -71,7 +72,9 @@ export function DailyWorkoutPage() {
       );
       void queryClient.invalidateQueries({ queryKey: ['dashboard', 'today'] });
       void queryClient.invalidateQueries({ queryKey: ['dashboard', 'weekly-summary'] });
-      notify({ title: 'Workout completed' });
+      notify({
+        title: variables.status === 'COMPLETED' ? 'Workout completed' : 'Workout marked incomplete',
+      });
     },
   });
   const deleteSchedule = useMutation({
@@ -127,11 +130,14 @@ export function DailyWorkoutPage() {
       return;
     }
 
-    completeSchedule.mutate(scheduleToComplete.id, {
-      onSuccess: () => {
-        setScheduleToComplete(null);
+    updateScheduleStatus.mutate(
+      { id: scheduleToComplete.id, status: 'COMPLETED' },
+      {
+        onSuccess: () => {
+          setScheduleToComplete(null);
+        },
       },
-    });
+    );
   };
 
   return (
@@ -143,6 +149,13 @@ export function DailyWorkoutPage() {
         action={
           <div className="flex items-center gap-2">
             <Button
+              disabled={isToday(selectedDate)}
+              onClick={() => setSelectedDate(new Date())}
+              variant="secondary"
+            >
+              Today
+            </Button>
+            <Button
               aria-label="Previous day"
               icon={<ChevronLeft className="h-4 w-4" aria-hidden />}
               onClick={() => setSelectedDate((d) => addDays(d, -1))}
@@ -150,7 +163,6 @@ export function DailyWorkoutPage() {
             />
             <Button
               aria-label="Next day"
-              disabled={isToday(selectedDate)}
               icon={<ChevronRight className="h-4 w-4" aria-hidden />}
               onClick={() => setSelectedDate((d) => addDays(d, 1))}
               variant="ghost"
@@ -166,6 +178,13 @@ export function DailyWorkoutPage() {
         }
       />
       <div className="space-y-4">
+        {schedules.length === 0 && !schedulesQuery.isLoading && (
+          <Panel>
+            <p className="text-sm leading-6 text-ink/70 dark:text-white/70">
+              No workouts scheduled for this day.
+            </p>
+          </Panel>
+        )}
         {schedules.map((item, index) => (
           <Panel key={item.id}>
             <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -215,13 +234,20 @@ export function DailyWorkoutPage() {
                 )}
                 <Button icon={<Play className="h-4 w-4" aria-hidden />}>Start</Button>
                 <Button
-                  disabled={item.status === 'COMPLETED' || completeSchedule.isPending}
+                  disabled={updateScheduleStatus.isPending}
                   icon={<CheckCircle2 className="h-4 w-4" aria-hidden />}
-                  onClick={() => setScheduleToComplete(item)}
+                  onClick={() => {
+                    if (item.status === 'COMPLETED') {
+                      updateScheduleStatus.mutate({ id: item.id, status: 'PLANNED' });
+                      return;
+                    }
+
+                    setScheduleToComplete(item);
+                  }}
                   type="button"
                   variant="secondary"
                 >
-                  Complete
+                  {item.status === 'COMPLETED' ? 'Mark Incomplete' : 'Complete'}
                 </Button>
               </div>
             </div>
@@ -240,7 +266,7 @@ export function DailyWorkoutPage() {
               No
             </Button>
             <Button
-              disabled={!scheduleToComplete || completeSchedule.isPending}
+              disabled={!scheduleToComplete || updateScheduleStatus.isPending}
               onClick={handleConfirmComplete}
               type="button"
             >
