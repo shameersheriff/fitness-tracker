@@ -1,5 +1,10 @@
 echo "Starting deployment..."
 echo ""
+echo "Building shared types package..."
+echo ""
+cd /projects/fitness-tracker
+pnpm --filter @fitness-tracker/shared-types build
+
 echo "Stopping frontend service..."
 echo ""
 pm2 stop ft:fe

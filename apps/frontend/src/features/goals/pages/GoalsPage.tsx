@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Target } from 'lucide-react';
+import { Pencil, Target } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { ProgressBar } from '@/components/common/ProgressBar';
@@ -80,10 +80,10 @@ export function GoalsPage() {
         description="Daily nutrition and body-composition targets prepared for longer term goal cycles."
         action={
           <Button
-            icon={<Plus className="h-4 w-4" aria-hidden />}
+            icon={<Pencil className="h-4 w-4" aria-hidden />}
             onClick={() => setIsModalOpen(true)}
           >
-            New Goal
+            Update Goal
           </Button>
         }
       />
