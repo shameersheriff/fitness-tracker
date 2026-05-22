@@ -244,7 +244,7 @@ export function WeeklyPlannerPage() {
                 variant="ghost"
               />
             </div>
-            <div className="flex flex-row justify-between w-full mt-2">
+            <div className="flex flex-row justify-end w-full mt-2">
               <div className="flex items-center gap-2">
                 {weekOffset !== 0 ? (
                   <Button onClick={() => setWeekOffset(0)} variant="secondary">
@@ -252,28 +252,27 @@ export function WeeklyPlannerPage() {
                   </Button>
                 ) : null}
                 <Button
-                  className="mr-2"
                   icon={isEditMode ? undefined : <Pencil className="h-4 w-4" aria-hidden />}
                   variant={isEditMode ? 'primary' : 'secondary'}
                   onClick={() => setIsEditMode((v) => !v)}
                 >
                   {isEditMode ? 'Done' : 'Edit'}
                 </Button>
+                <Button
+                  icon={<Plus className="h-4 w-4" aria-hidden />}
+                  onClick={() => {
+                    const defaultDate =
+                      isSameDay(weekStart, startOfWeek(new Date(), { weekStartsOn: 1 })) ||
+                      weekOffset < 0
+                        ? todayInputValue
+                        : format(weekStart, 'yyyy-MM-dd');
+                    setForm((current) => ({ ...current, scheduledDate: defaultDate }));
+                    setIsModalOpen(true);
+                  }}
+                >
+                  Add Workout
+                </Button>
               </div>
-              <Button
-                icon={<Plus className="h-4 w-4" aria-hidden />}
-                onClick={() => {
-                  const defaultDate =
-                    isSameDay(weekStart, startOfWeek(new Date(), { weekStartsOn: 1 })) ||
-                    weekOffset < 0
-                      ? todayInputValue
-                      : format(weekStart, 'yyyy-MM-dd');
-                  setForm((current) => ({ ...current, scheduledDate: defaultDate }));
-                  setIsModalOpen(true);
-                }}
-              >
-                Add Workout
-              </Button>
             </div>
           </div>
         }
