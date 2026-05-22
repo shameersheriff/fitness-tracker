@@ -25,6 +25,8 @@ echo "Clearing old build files and building new ones..."
 echo ""
 sudo rm -rf dist/*
 pnpm build
+pnpm db:generate
+pnpm db:migrate
 pm2 start ft:be
 
 sudo systemctl reload nginx
