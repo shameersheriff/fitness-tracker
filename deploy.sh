@@ -24,6 +24,7 @@ cd /projects/fitness-tracker/apps/backend
 echo "Clearing old build files and building new ones..."
 echo ""
 sudo rm -rf dist/*
+pnpm i
 pnpm build
 pnpm db:generate
 pnpm db:migrate
