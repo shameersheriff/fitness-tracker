@@ -51,7 +51,7 @@ const todayInputValue = new Date().toISOString().slice(0, 10);
 const initialForm: ScheduleForm = {
   notes: '',
   scheduledDate: todayInputValue,
-  targetReps: '8',
+  targetReps: '10',
   targetSets: '4',
   targetWeight: '',
   workoutId: '',
