@@ -11,7 +11,7 @@ const primaryMobileItems = navigationItems.filter((item) =>
 export function MobileNav() {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-ink/10 bg-white/95 px-2 py-2 backdrop-blur dark:border-white/10 dark:bg-[#141b19]/95 lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-ink/10 bg-white/95 px-2 pb-8 py-2 backdrop-blur dark:border-white/10 dark:bg-[#141b19]/95 lg:hidden"
       aria-label="Mobile navigation"
     >
       {primaryMobileItems.map((item) => (
