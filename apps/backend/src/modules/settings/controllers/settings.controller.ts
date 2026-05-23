@@ -14,4 +14,8 @@ export const settingsController = {
     const data = await service.update(req.body, req.userContext.userId);
     return ok(res, 'Settings updated successfully', data);
   }),
+  updatePassword: asyncHandler(async (req, res) => {
+    const data = await service.updatePassword(req.body, req.userContext.userId);
+    return ok(res, 'Password updated successfully', data);
+  }),
 };

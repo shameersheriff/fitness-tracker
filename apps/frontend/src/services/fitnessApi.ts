@@ -134,4 +134,12 @@ export const fitnessApi = {
     nutrition: () => getDataStrict<AnalyticsPoint[]>('/analytics/nutrition'),
     progress: () => getDataStrict<AnalyticsPoint[]>('/analytics/progress'),
   },
+  settings: {
+    updatePassword: (payload: { currentPassword: string; newPassword: string }) =>
+      sendDataStrict<{ currentPassword: string; newPassword: string }, { updated: boolean }>(
+        '/settings/password',
+        payload,
+        'patch',
+      ),
+  },
 };
