@@ -12,6 +12,7 @@ cd /projects/fitness-tracker/apps/frontend
 echo "Clearing old build files and building new ones..."
 echo ""
 sudo rm -rf dist/*
+pnpm i
 pnpm build
 pm2 start ft:fe
 echo ""
