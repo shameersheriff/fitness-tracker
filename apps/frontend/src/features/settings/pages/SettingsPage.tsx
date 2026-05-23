@@ -12,6 +12,9 @@ import { Button } from '@/components/ui/Button';
 import { Panel } from '@/components/ui/Panel';
 import { fitnessApi } from '@/services/fitnessApi';
 import { useThemeStore } from '@/stores/themeStore';
+import { THEME_OPTIONS } from '@/theme/themeConfig';
+
+import type { ThemePreference } from '@fitness-tracker/shared-types';
 
 const passwordSchema = z
   .object({
@@ -81,12 +84,8 @@ export function SettingsPage() {
           </h2>
           <SelectField
             label="Theme"
-            onChange={(event) => setTheme(event.target.value as 'system' | 'light' | 'dark')}
-            options={[
-              { label: 'System', value: 'system' },
-              { label: 'Light', value: 'light' },
-              { label: 'Dark', value: 'dark' },
-            ]}
+            onChange={(event) => setTheme(event.target.value as ThemePreference)}
+            options={THEME_OPTIONS}
             value={theme}
           />
         </Panel>

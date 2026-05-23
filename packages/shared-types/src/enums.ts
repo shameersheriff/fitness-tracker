@@ -37,5 +37,11 @@ export type ScheduleStatus = (typeof scheduleStatuses)[number];
 export const difficultyLevels = ['VERY_EASY', 'EASY', 'MODERATE', 'HARD', 'MAX_EFFORT'] as const;
 export type DifficultyLevel = (typeof difficultyLevels)[number];
 
-export const themes = ['system', 'light', 'dark'] as const;
-export type ThemePreference = (typeof themes)[number];
+export const themeSchemes = ['light', 'dark'] as const;
+export type ThemeScheme = (typeof themeSchemes)[number];
+
+export const themePreferences = ['system', ...themeSchemes] as const;
+export type ThemePreference = (typeof themePreferences)[number];
+
+// Backward-compatible alias for existing imports.
+export const themes = themePreferences;

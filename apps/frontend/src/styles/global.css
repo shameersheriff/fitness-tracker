@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --app-background: #f7f8f4;
+  --app-foreground: #17211f;
   color-scheme: light;
   font-family:
     Inter,
@@ -12,21 +14,21 @@
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  background: #f7f8f4;
-  color: #17211f;
+  background: var(--app-background);
+  color: var(--app-foreground);
 }
 
-.dark {
+:root[data-theme='dark'] {
+  --app-background: #121816;
+  --app-foreground: #eef2ec;
   color-scheme: dark;
-  background: #121816;
-  color: #eef2ec;
 }
 
 html,
 body,
 #root {
-  background: inherit;
-  color: black;
+  background: var(--app-background);
+  color: var(--app-foreground);
 }
 
 body {

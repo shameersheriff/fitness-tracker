@@ -6,11 +6,9 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { ToastProvider } from '@/components/common/ToastProvider';
 import { router } from '@/routes/router';
 import { useThemeStore } from '@/stores/themeStore';
+import { applyThemeToDocument, resolveThemePreference } from '@/theme/themeConfig';
 
 import { queryClient } from './queryClient';
-
-const LIGHT_THEME_COLOR = '#f7f8f4';
-const DARK_THEME_COLOR = '#121816';
 
 function readSystemPrefersDark() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -20,7 +18,7 @@ export function App() {
   const theme = useThemeStore((state) => state.theme);
   const [systemPrefersDark, setSystemPrefersDark] = useState(readSystemPrefersDark);
   const resolvedTheme = useMemo(
-    () => (theme === 'system' ? (systemPrefersDark ? 'dark' : 'light') : theme),
+    () => resolveThemePreference(theme, systemPrefersDark),
     [theme, systemPrefersDark],
   );
 
@@ -38,30 +36,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('dark', resolvedTheme === 'dark');
-
-    const themeColor = resolvedTheme === 'dark' ? DARK_THEME_COLOR : LIGHT_THEME_COLOR;
-    const themeColorMeta =
-      document.querySelector('meta[name="theme-color"]') ?? document.createElement('meta');
-
-    themeColorMeta.setAttribute('name', 'theme-color');
-    themeColorMeta.setAttribute('content', themeColor);
-    if (!themeColorMeta.parentElement) {
-      document.head.append(themeColorMeta);
-    }
-
-    const appleStatusMeta =
-      document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]') ??
-      document.createElement('meta');
-    appleStatusMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-    appleStatusMeta.setAttribute(
-      'content',
-      resolvedTheme === 'dark' ? 'black-translucent' : 'default',
-    );
-    if (!appleStatusMeta.parentElement) {
-      document.head.append(appleStatusMeta);
-    }
+    applyThemeToDocument(resolvedTheme);
   }, [resolvedTheme]);
 
   return (

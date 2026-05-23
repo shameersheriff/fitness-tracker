@@ -5,6 +5,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { getNextThemePreference } from '@/theme/themeConfig';
 import { cn } from '@/utils/cn';
 
 import { navigationItems } from './navigation';
@@ -13,7 +14,7 @@ export function Topbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
-  const nextTheme = theme === 'dark' ? 'light' : 'dark';
+  const nextTheme = getNextThemePreference(theme);
 
   const user = useAuthStore((state) => state.user);
   const clearAuth = useAuthStore((state) => state.clearAuth);
@@ -89,7 +90,7 @@ export function Topbar() {
               title="Toggle theme"
               variant="secondary"
             >
-              {theme === 'dark' ? (
+              {nextTheme === 'light' ? (
                 <SunMedium className="h-4 w-4" aria-hidden />
               ) : (
                 <Moon className="h-4 w-4" aria-hidden />
