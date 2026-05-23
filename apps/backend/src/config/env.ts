@@ -6,6 +6,8 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().default(4000),
   DATABASE_URL: z.string().default('file:./dev.db'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  JWT_EXPIRES_IN: z.string().default('7d'),
+  JWT_SECRET: z.string().min(32).default('development-secret-change-this-immediately'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   RATE_LIMIT_MAX: z.coerce.number().default(500),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(15 * 60 * 1000),

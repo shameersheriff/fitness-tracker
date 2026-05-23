@@ -102,6 +102,7 @@ model User {
   firstName      String
   lastName       String
   email          String                 @unique
+  passwordHash   String?
   age            Int?
   gender         Gender?
   height         Float?
@@ -109,6 +110,7 @@ model User {
   targetWeight   Float?
   activityLevel  ActivityLevel          @default(MODERATE)
   goalType       GoalType?
+  lastLoginAt    DateTime?
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
   deletedAt      DateTime?

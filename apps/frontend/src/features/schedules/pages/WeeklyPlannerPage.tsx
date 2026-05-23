@@ -1,16 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addDays, addWeeks, endOfDay, format, isSameDay, startOfWeek } from 'date-fns';
-import {
-  ArrowDown,
-  ArrowUp,
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  Plus,
-  Trash2,
-  Pencil,
-} from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Plus, Trash2, Pencil } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/PageHeader';
 import { useToast } from '@/components/common/ToastProvider';

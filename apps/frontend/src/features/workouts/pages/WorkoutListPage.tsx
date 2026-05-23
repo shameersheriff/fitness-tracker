@@ -46,13 +46,14 @@ export function WorkoutListPage() {
   const workoutTypes = workoutTypesQuery.data ?? [];
 
   const filteredWorkouts = useMemo(() => {
+    const data = workoutsQuery.data ?? [];
     const query = searchQuery.trim().toLowerCase();
 
     if (!query) {
-      return workouts;
+      return data;
     }
 
-    return workouts.filter((workout) => {
+    return data.filter((workout) => {
       const values = [
         workout.name,
         workout.description,
@@ -63,7 +64,7 @@ export function WorkoutListPage() {
 
       return values.some((value) => value?.toLowerCase().includes(query));
     });
-  }, [searchQuery, workouts]);
+  }, [searchQuery, workoutsQuery.data]);
 
   const openCreateModal = () => {
     setEditingWorkout(null);

@@ -56,7 +56,12 @@ export function WorkoutFormPage() {
         description="Capture the exercise metadata, coaching cues, and tracking classification."
       />
       <Panel>
-        <form className="grid gap-5 lg:grid-cols-2" onSubmit={onSubmit}>
+        <form
+          className="grid gap-5 lg:grid-cols-2"
+          onSubmit={(e) => {
+            void onSubmit(e);
+          }}
+        >
           <TextField label="Workout name" error={errors.name?.message} {...register('name')} />
           <Controller
             control={control}

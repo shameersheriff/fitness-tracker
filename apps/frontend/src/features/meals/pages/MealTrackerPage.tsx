@@ -50,7 +50,6 @@ export function MealTrackerPage() {
   const queryClient = useQueryClient();
   const { notify } = useToast();
   const mealsQuery = useMeals();
-  const meals = mealsQuery.data ?? [];
   const dayLogQuery = useQuery({
     queryKey: ['meals', 'day', selectedDate],
     queryFn: () => fitnessApi.meals.dayLog(selectedDate),
@@ -61,8 +60,8 @@ export function MealTrackerPage() {
     ({ calories: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, sugar: 0, sodium: 0 } as const);
 
   const sortedMeals = useMemo(
-    () => [...meals].sort((a, b) => a.title.localeCompare(b.title)),
-    [meals],
+    () => [...(mealsQuery.data ?? [])].sort((a, b) => a.title.localeCompare(b.title)),
+    [mealsQuery.data],
   );
 
   const createMeal = useMutation({
@@ -112,8 +111,9 @@ export function MealTrackerPage() {
         (current ?? []).filter((meal) => meal.id !== mealId),
       );
       setQuantities((current) => {
-        const { [mealId]: _deletedQuantity, ...rest } = current;
-        return rest;
+        const next = { ...current };
+        delete next[mealId];
+        return next;
       });
       void queryClient.invalidateQueries({ queryKey: ['meals', 'day', selectedDate] });
       notify({ title: 'Meal template deleted' });

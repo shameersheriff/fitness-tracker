@@ -53,7 +53,7 @@ export function GoalsPage() {
     },
   });
 
-  const goals = [
+  const goals: [string, number, number][] = [
     ['Calories', macros?.calories ?? 0, goal?.dailyCalories ?? 0],
     ['Protein', macros?.protein ?? 0, goal?.protein ?? 0],
     ['Carbs', macros?.carbs ?? 0, goal?.carbs ?? 0],
@@ -102,9 +102,9 @@ export function GoalsPage() {
         </div>
         <div className="grid gap-5 md:grid-cols-2">
           {goals.map(([label, consumed, target]) => {
-            const value = target ? ((consumed as number) / (target as number)) * 100 : 0;
+            const value = target ? (consumed / target) * 100 : 0;
             return (
-              <div key={label as string}>
+              <div key={label}>
                 <div className="mb-2 flex justify-between text-sm font-medium">
                   <span>{label}</span>
                   <span>

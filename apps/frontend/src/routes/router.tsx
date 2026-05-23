@@ -1,7 +1,9 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { AppLayout } from '@/components/layouts/AppLayout';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { RouteErrorFallback } from '@/components/common/RouteErrorFallback';
+import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { AnalyticsPage } from '@/features/analytics/pages/AnalyticsPage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { GoalsPage } from '@/features/goals/pages/GoalsPage';
@@ -17,26 +19,32 @@ import { WorkoutFormPage } from '@/features/workouts/pages/WorkoutFormPage';
 import { WorkoutListPage } from '@/features/workouts/pages/WorkoutListPage';
 
 export const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage />, errorElement: <RouteErrorFallback /> },
   {
     path: '/',
-    element: <AppLayout />,
+    element: <ProtectedRoute />,
     errorElement: <RouteErrorFallback />,
     children: [
-      { index: true, element: <Navigate to="/dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'workouts', element: <WorkoutListPage /> },
-      { path: 'workouts/new', element: <WorkoutFormPage /> },
-      { path: 'workouts/:id/edit', element: <WorkoutFormPage /> },
-      { path: 'workout-types', element: <WorkoutTypesPage /> },
-      { path: 'planner/week', element: <WeeklyPlannerPage /> },
-      { path: 'planner/day', element: <DailyWorkoutPage /> },
-      { path: 'sessions/logger', element: <SessionLoggerPage /> },
-      { path: 'meals', element: <MealTrackerPage /> },
-      { path: 'nutrition', element: <NutritionSummaryPage /> },
-      { path: 'goals', element: <GoalsPage /> },
-      { path: 'progress', element: <BodyProgressPage /> },
-      { path: 'analytics', element: <AnalyticsPage /> },
-      { path: 'settings', element: <SettingsPage /> },
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Navigate to="/dashboard" replace /> },
+          { path: 'dashboard', element: <DashboardPage /> },
+          { path: 'workouts', element: <WorkoutListPage /> },
+          { path: 'workouts/new', element: <WorkoutFormPage /> },
+          { path: 'workouts/:id/edit', element: <WorkoutFormPage /> },
+          { path: 'workout-types', element: <WorkoutTypesPage /> },
+          { path: 'planner/week', element: <WeeklyPlannerPage /> },
+          { path: 'planner/day', element: <DailyWorkoutPage /> },
+          { path: 'sessions/logger', element: <SessionLoggerPage /> },
+          { path: 'meals', element: <MealTrackerPage /> },
+          { path: 'nutrition', element: <NutritionSummaryPage /> },
+          { path: 'goals', element: <GoalsPage /> },
+          { path: 'progress', element: <BodyProgressPage /> },
+          { path: 'analytics', element: <AnalyticsPage /> },
+          { path: 'settings', element: <SettingsPage /> },
+        ],
+      },
     ],
   },
 ]);

@@ -160,7 +160,7 @@ export function SessionLoggerPage() {
         restTimeSeconds: setData.restTimeSeconds ? Number(setData.restTimeSeconds) : undefined,
         durationSeconds: setData.durationSeconds ? Number(setData.durationSeconds) : undefined,
         completed: true,
-      } as Partial<WorkoutSession['sets'][number]>,
+      },
     });
   };
 
